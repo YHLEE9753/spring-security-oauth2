@@ -1,4 +1,10 @@
 # Spring security OAuth2 + JWT
+### Table
+1. OAuth2 + JWT 구현
+2. JPA 연동
+3. Authorization 적용
+4. Refactoring
+---
 # 1. OAuth2 + JWT 구현
 ## 1. init: project setting
 java : 17<br>
@@ -320,5 +326,194 @@ public class TokenController {
     }
 }
 ```
+# 2. JPA 연동
+## 1. 도메인 작성
+- User 도메인을 생성하고, JPARepository 를 생성한다.
+```java
+@Entity
+@Getter
+@NoArgsConstructor
+public class User {
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Long id;
+    private String name;
+    private String username; // john123 or email 도 String 이므로 가능하다
+    private String password;
+    @Enumerated(EnumType.STRING)
+    private Role role;
 
-# 2. JPA 연동 및 리팩토링
+    @Builder
+    public User(Long id, String name, String username, String password, Role role) {
+        this.id = id;
+        this.name = name;
+        this.username = username;
+        this.password = password;
+        this.role = role;
+    }
+}
+
+public enum Role {
+    ROLE_USER("ROLE_USER"),
+    ROLE_ADMIN("ROLE_ADMIN"),
+    ROLE_MANAGER("ROLE_MANAGER"),
+    ROLE_SUPER_ADMIN("ROLE_SUPER_ADMIN"),
+    ;
+
+    public final String name;
+
+    private Role(String label) {
+        this.name = label;
+    }
+}
+```
+
+## 2. Service 작성 - DB
+- Repository 에 의존성을 추가한 후 DB 관련 service 로직을 작성한다.
+```java
+@Slf4j
+@Service
+@Primary
+@RequiredArgsConstructor
+public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequest, OAuth2User>,
+    UserService {
+    private final UserRepo userRepo;
+
+    ...
+    
+    @Override
+    @Transactional
+    public User saveUser(User user) {
+        log.info("Saving new user {} to the database", user.getName());
+        return userRepo.save(user);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<User> getUser(String username) {
+        log.info("Fetching user {}", username);
+        return userRepo.findByUsername(username);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<User> getUsers() {
+        log.info("Fetching all users");
+        return userRepo.findAll();
+    }
+}
+```
+
+## 3. Authentication 과 successHandler 에 DB 로직을 적용한다.
+- JwtAuthenticationFilter 에서 토큰에 담는 정보를 db 에서 가져와서 담는다.(email 식별자를 통해 담아온다.)
+- OAuth2SuccessHandler 에서 최초 회원일 시에는 회원가입을 진행한다.
+
+### JwtAuthenticationFilter
+```java
+@RequiredArgsConstructor
+public class JwtAuthenticationFilter extends GenericFilterBean {
+    private final TokenService tokenService;
+    private final UserService userService;
+
+    @Override
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+        throws IOException, ServletException, ServletException {
+        String token = ((HttpServletRequest)request).getHeader("Auth");
+
+        // 토큰이 있는지, 유효한지 검증
+        if (token != null && tokenService.verifyToken(token)) {
+            String email = tokenService.getUid(token);
+
+            // DB 연동을 안했으니 이메일 정보로 유저를 만들어주겠습니다.
+//            UserDto userDto = UserDto.builder()
+//                .email(email)
+//                .name("이름")
+//                .picture("프로필 이미지").build();
+
+            // DB 연동을 했으니 DB 에서 찾아오겠습니다.
+            User user = userService.getUser(email)
+                .orElseThrow(() -> new EntityNotFoundException(
+                    format("There is no User entity by userName. userName : {}", email)
+                ));
+            UserAuthenticationDto userAuthenticationDto = UserConverter.toDto(user);
+
+            Authentication auth = getAuthentication(userAuthenticationDto);
+            SecurityContextHolder.getContext().setAuthentication(auth);
+        }
+
+        chain.doFilter(request, response);
+    }
+
+    // UsernamePasswordAuthenticationToken 생성
+    public Authentication getAuthentication(UserAuthenticationDto member) {
+        return new UsernamePasswordAuthenticationToken(member, "",
+            Arrays.asList(new SimpleGrantedAuthority(ROLE_USER.name)));
+    }
+}
+```
+### OAuth2SuccessHandler
+```java
+@Slf4j
+@RequiredArgsConstructor
+@Component
+public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
+    private final TokenService tokenService;
+    private final ObjectMapper objectMapper;
+    private final UserService userService;
+
+    @Override
+    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
+        Authentication authentication)
+        throws IOException, ServletException {
+        // 인증 된 principal 를 가지고 온다.
+        OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
+        UserAuthenticationDto userAuthenticationDto = UserRequestMapper.toDto(oAuth2User);
+
+        // 최초 로그인이라면 회원가입 처리를 한다.
+        userService.getUser(userAuthenticationDto.getEmail())
+            .orElse(userService.saveUser(
+                User.builder()
+                    .username(userAuthenticationDto.getEmail())
+                    .name(userAuthenticationDto.getName())
+                    .build()
+            ));
+
+        // 토큰 생성
+        Token token = tokenService.generateToken(userAuthenticationDto.getEmail(), ROLE_USER.name);
+        log.info("{}", token);
+
+        writeTokenResponse(response, token);
+    }
+    ...
+```
+
+## 4. Controller 추가
+- 최종 테스트를 위해 controller 를 추가한다.
+- 아직 Authorization 이 적용되지 않았으므로 로그인을 진행해도 어느 url 을 가도 login 창으로 redirect 되는것을 확인할 수 있다.
+```java
+@RestController
+@RequestMapping("/api")
+@RequiredArgsConstructor
+public class UserApi {
+    private final UserService userService;
+
+    @GetMapping("/test")
+    public String index(){
+        return "Hello world";
+    }
+
+    @GetMapping("/users")
+    public ResponseEntity<List<User>> getUsers() {
+        return ResponseEntity
+            .ok()
+            .body(userService.getUsers());
+    }
+}
+
+```
+
+# 3. Authorization 적용
+
+
+# 4. Refactoring
+
