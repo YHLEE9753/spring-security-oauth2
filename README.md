@@ -1,9 +1,7 @@
 # Spring security OAuth2 + JWT
 ### Table
 1. OAuth2 + JWT 구현
-2. JPA 연동
-3. Authorization 적용
-4. Refactoring
+2. Refactoring
 ---
 # 1. OAuth2 + JWT 구현
 ## 1. init: project setting
@@ -20,6 +18,7 @@ dependencies {
     implementation 'javax.xml.bind:jaxb-api'
     implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
     implementation 'jakarta.xml.bind:jakarta.xml.bind-api:4.0.0'
+    implementation 'com.github.ulisesbocchio:jasypt-spring-boot-starter:3.0.4'
 
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
@@ -27,6 +26,7 @@ dependencies {
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     runtimeOnly 'mysql:mysql-connector-java'
     annotationProcessor 'org.projectlombok:lombok'
+    annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
@@ -579,3 +579,18 @@ private Key getSignKey(){
             ));
 ```
 
+# 2. Refactoring
+## 1. jjwt depreciated
+- 일부 depreciated 된 로직이 존재한다.
+- 코드 수정시 token 에서 verify 오류가 발생하여 수정하지 않고 있다.
+- 추후 수정예정
+
+## 2. submodule 을 통한 보안정보 격리
+- submodule 을 통해 보안 정보를 격리시킨다
+- 추후 수정예정
+
+## 3. profile 적용
+- 추후 수정예정
+
+## 4. Jasypt 를 이용한 키 암호화
+- 추후 수정예정
