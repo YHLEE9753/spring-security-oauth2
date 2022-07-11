@@ -1,8 +1,8 @@
-package com.practice.userservice.security.filter;
+package com.practice.userservice.global.security.filter;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
-import com.practice.userservice.service.TokenService;
+import com.practice.userservice.global.token.TokenService;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;

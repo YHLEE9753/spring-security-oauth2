@@ -1,5 +1,6 @@
-package com.practice.userservice.service;
+package com.practice.userservice.global.token;
 
+import com.practice.userservice.global.OAuthYamlRead;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
@@ -7,20 +8,23 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import java.util.Base64;
 import java.util.Date;
 import javax.annotation.PostConstruct;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class TokenService {
-    // 추가 리펙토링 필요
-    private String secretKey = "tokensecretkeydoublecaseqwdqwdqwdqwdqwdqwdwqdqwdq";
-    // AccessToken 만료기간 : 10분
-    long tokenPeriod = 1000L * 60L * 10L;
-    // RefreshToken 만료기간 : 3주
-    long refreshPeriod = 1000L * 60L * 60L * 24L * 30L * 3L;
+    private final OAuthYamlRead oAuthYamlRead;
+    private String secretKey;
+    private long tokenPeriod;
+    private long refreshPeriod;
+
+    public TokenService(OAuthYamlRead oAuthYamlRead) {
+        this.oAuthYamlRead = oAuthYamlRead;
+        this.secretKey = oAuthYamlRead.getTokenSecret();
+        this.tokenPeriod = oAuthYamlRead.getTokenExpiry();
+        this.refreshPeriod = oAuthYamlRead.getRefreshTokenExpiry();
+    }
 
     @PostConstruct // 의존성 주입 후 초기화(Key 생성)
     protected void init() {

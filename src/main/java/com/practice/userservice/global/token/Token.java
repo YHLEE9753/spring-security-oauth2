@@ -1,4 +1,4 @@
-package com.practice.userservice.service;
+package com.practice.userservice.global.token;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;

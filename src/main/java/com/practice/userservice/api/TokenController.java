@@ -3,8 +3,8 @@ package com.practice.userservice.api;
 import static com.practice.userservice.domain.Role.ROLE_USER;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
-import com.practice.userservice.service.Token;
-import com.practice.userservice.service.TokenService;
+import com.practice.userservice.global.token.Token;
+import com.practice.userservice.global.token.TokenService;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;

@@ -1,11 +1,11 @@
-package com.practice.userservice.security.handler;
+package com.practice.userservice.global.security.handler;
 
 import static com.practice.userservice.domain.Role.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.practice.userservice.domain.User;
-import com.practice.userservice.service.Token;
-import com.practice.userservice.service.TokenService;
+import com.practice.userservice.global.token.Token;
+import com.practice.userservice.global.token.TokenService;
 import com.practice.userservice.service.UserService;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -18,8 +18,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.OAuth2User;
-import org.springframework.security.web.DefaultRedirectStrategy;
-import org.springframework.security.web.RedirectStrategy;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 
@@ -31,7 +29,6 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
     private final TokenService tokenService;
     private final ObjectMapper objectMapper;
     private final UserService userService;
-    private RedirectStrategy redirectStrategy = new DefaultRedirectStrategy();
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,

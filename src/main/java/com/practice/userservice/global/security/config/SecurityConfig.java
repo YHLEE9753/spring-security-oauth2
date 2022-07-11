@@ -1,12 +1,12 @@
-package com.practice.userservice.security.config;
+package com.practice.userservice.global.security.config;
 
 import static com.practice.userservice.domain.Role.ROLE_USER;
 import static org.springframework.http.HttpMethod.GET;
 
-import com.practice.userservice.security.filter.JwtAuthenticationFilter;
-import com.practice.userservice.security.handler.OAuth2SuccessHandler;
+import com.practice.userservice.global.security.filter.JwtAuthenticationFilter;
+import com.practice.userservice.global.security.handler.OAuth2SuccessHandler;
 import com.practice.userservice.service.CustomOAuth2UserService;
-import com.practice.userservice.service.TokenService;
+import com.practice.userservice.global.token.TokenService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
