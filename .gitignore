@@ -6,6 +6,7 @@ build/
 !**/src/test/**/build/
 
 ### SubModule ###
+.env
 application-security.yaml
 
 ### STS ###
