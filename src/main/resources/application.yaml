@@ -65,9 +65,6 @@ cors:
   max-age: 3600
 
 # jwt secret key ??
-jwt.secret: '8sknjlO3NPTBqo319DHLNqsQAfRJEdKsETOds'
-
-# ?? ?? secret Key ? RedirectUri ??
 jwt:
   tokenSecret: 926D96C90030DD58429D2751AC1BDBBC
   tokenExpiry: 600000

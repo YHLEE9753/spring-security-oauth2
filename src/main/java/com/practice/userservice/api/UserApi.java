@@ -1,8 +1,11 @@
 package com.practice.userservice.api;
 
+
 import com.practice.userservice.domain.User;
 import com.practice.userservice.service.UserService;
 import java.util.List;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,6 +21,11 @@ public class UserApi {
     @GetMapping("/test")
     public String index(){
         return "Hello world";
+    }
+
+    @GetMapping("/logout")
+    public void logout(HttpServletRequest request, HttpServletResponse response){
+
     }
 
     @GetMapping("/users")

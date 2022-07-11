@@ -45,6 +45,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         // 순서 3
         http.authorizeRequests().anyRequest().authenticated(); // 인증 필요
 
+        http.logout().logoutSuccessUrl("/login");
         http.oauth2Login().successHandler(successHandler).userInfoEndpoint().userService(oAuth2UserService);
         http.addFilterBefore(new JwtAuthenticationFilter(tokenService), UsernamePasswordAuthenticationFilter.class);
     }

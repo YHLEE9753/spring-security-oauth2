@@ -26,10 +26,10 @@ public class TokenController {
 
     @PostMapping("/refresh")
     public String refreshAuth(HttpServletRequest request, HttpServletResponse response) {
-        String token = request.getHeader("Refresh");
+        String refreshToken = request.getHeader("Refresh");
 
-        if (token != null && tokenService.verifyToken(token)) {
-            String email = tokenService.getUid(token);
+        if (refreshToken != null && tokenService.verifyToken(refreshToken)) {
+            String email = tokenService.getUid(refreshToken);
             Token newToken = tokenService.generateToken(email, ROLE_USER.stringValue);
 
             response.addHeader(AUTHORIZATION, newToken.getAccessToken());

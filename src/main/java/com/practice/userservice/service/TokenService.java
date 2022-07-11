@@ -84,7 +84,6 @@ public class TokenService {
     }
 
     public String changeToToken(String header) {
-        String tokenType = "Bearer ";
-        return header.substring(tokenType.length());
+        return header.substring("Bearer ".length());
     }
 }

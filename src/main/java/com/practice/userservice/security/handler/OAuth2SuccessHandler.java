@@ -1,7 +1,6 @@
 package com.practice.userservice.security.handler;
 
 import static com.practice.userservice.domain.Role.*;
-import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.practice.userservice.domain.User;
@@ -12,12 +11,15 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Map;
 import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.security.web.DefaultRedirectStrategy;
+import org.springframework.security.web.RedirectStrategy;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 
@@ -29,6 +31,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
     private final TokenService tokenService;
     private final ObjectMapper objectMapper;
     private final UserService userService;
+    private RedirectStrategy redirectStrategy = new DefaultRedirectStrategy();
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
@@ -54,20 +57,26 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
         // 토큰 생성
         Token token = tokenService.generateToken(email, ROLE_USER.stringValue);
-        String tokenType = "Bearer ";
 
-        writeTokenResponse(response, token, tokenType);
+        writeTokenResponse(response, token);
     }
 
-    private void writeTokenResponse(HttpServletResponse response, Token token, String tokenType)
+    private void writeTokenResponse(HttpServletResponse response, Token token)
         throws IOException {
         response.setContentType("text/html;charset=UTF-8");
-        response.addHeader(AUTHORIZATION, tokenType + token.getAccessToken());
-        response.addHeader("Refresh", token.getRefreshToken());
+//        response.addHeader(AUTHORIZATION, "Bearer " + token.getAccessToken());
         response.setContentType("application/json;charset=UTF-8");
 
+        Cookie cookie = new Cookie("refreshToken",token.getRefreshToken());
+
+        cookie.setSecure(true);
+        cookie.setHttpOnly(true);
+        cookie.setPath("/");
+
+        response.addCookie(cookie);
+
         PrintWriter writer = response.getWriter();
-        writer.println(objectMapper.writeValueAsString(token));
+        writer.println(objectMapper.writeValueAsString(token.getAccessToken()));
         writer.flush();
     }
 }
