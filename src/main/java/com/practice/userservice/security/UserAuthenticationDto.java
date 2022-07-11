@@ -1,4 +1,4 @@
-package com.practice.userservice.config;
+package com.practice.userservice.security;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -6,13 +6,13 @@ import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
 @Getter
-public class UserDto {
+public class UserAuthenticationDto {
     private String email;
     private String name;
     private String picture;
 
     @Builder
-    public UserDto(String email, String name, String picture) {
+    public UserAuthenticationDto(String email, String name, String picture) {
         this.email = email;
         this.name = name;
         this.picture = picture;

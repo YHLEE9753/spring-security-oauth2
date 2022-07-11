@@ -1,8 +1,15 @@
-package com.practice.userservice.config;
+package com.practice.userservice.security.oauth;
+
+import static com.practice.userservice.domain.Role.*;
+import static java.lang.String.format;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.practice.userservice.security.UserAuthenticationDto;
+import com.practice.userservice.domain.User;
+import com.practice.userservice.security.UserRequestMapper;
 import com.practice.userservice.service.Token;
 import com.practice.userservice.service.TokenService;
+import com.practice.userservice.service.UserService;
 import java.io.IOException;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -19,20 +26,28 @@ import org.springframework.stereotype.Component;
 @Component
 public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
     private final TokenService tokenService;
-    private final UserRequestMapper userRequestMapper;
     private final ObjectMapper objectMapper;
+    private final UserService userService;
 
     @Override
-    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication)
+    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
+        Authentication authentication)
         throws IOException, ServletException {
         // 인증 된 principal 를 가지고 온다.
-        OAuth2User oAuth2User = (OAuth2User)authentication.getPrincipal();
-        UserDto userDto = userRequestMapper.toDto(oAuth2User);
+        OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
+        UserAuthenticationDto userAuthenticationDto = UserRequestMapper.toDto(oAuth2User);
 
-        // (추후 리팩토링) 최초 로그인이라면 회원가입 처리를 한다.
+        // 최초 로그인이라면 회원가입 처리를 한다.
+        userService.getUser(userAuthenticationDto.getEmail())
+            .orElse(userService.saveUser(
+                User.builder()
+                    .username(userAuthenticationDto.getEmail())
+                    .name(userAuthenticationDto.getName())
+                    .build()
+            ));
 
         // 토큰 생성
-        Token token = tokenService.generateToken(userDto.getEmail(), "USER");
+        Token token = tokenService.generateToken(userAuthenticationDto.getEmail(), ROLE_USER.name);
         log.info("{}", token);
 
         writeTokenResponse(response, token);
