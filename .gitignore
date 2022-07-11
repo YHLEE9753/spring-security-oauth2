@@ -6,7 +6,7 @@ build/
 !**/src/test/**/build/
 
 ### SubModule ###
-spring-security-oauth2-submodule/security/
+application-security.yaml
 
 ### STS ###
 .apt_generated
