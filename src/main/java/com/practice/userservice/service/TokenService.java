@@ -7,9 +7,11 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import java.util.Base64;
 import java.util.Date;
 import javax.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class TokenService {
     // 추가 리펙토링 필요
     private String secretKey = "token-secret-key-double-caseqwdqwdqwdqwdqwdqwdwqdqwdq";
