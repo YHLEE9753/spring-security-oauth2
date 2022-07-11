@@ -22,8 +22,6 @@ public class OAuth2Attribute {
                 switch (provider) {
                     case "google":
                         return ofGoogle(attributeKey, attributes);
-                    case "kakao":
-                        return ofKakao("email", attributes);
                     case "naver":
                         return ofNaver("id", attributes);
                     default:
@@ -38,20 +36,6 @@ public class OAuth2Attribute {
             .email((String) attributes.get("email"))
             .picture((String)attributes.get("picture"))
             .attributes(attributes)
-            .attributeKey(attributeKey)
-            .build();
-    }
-
-    private static OAuth2Attribute ofKakao(String attributeKey,
-        Map<String, Object> attributes) {
-        Map<String, Object> kakaoAccount = (Map<String, Object>) attributes.get("kakao_account");
-        Map<String, Object> kakaoProfile = (Map<String, Object>) kakaoAccount.get("profile");
-
-        return OAuth2Attribute.builder()
-            .name((String) kakaoProfile.get("nickname"))
-            .email((String) kakaoAccount.get("email"))
-            .picture((String)kakaoProfile.get("profile_image_url"))
-            .attributes(kakaoAccount)
             .attributeKey(attributeKey)
             .build();
     }

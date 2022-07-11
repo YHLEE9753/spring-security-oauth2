@@ -1,7 +1,6 @@
 package com.practice.userservice.security.handler;
 
 import static com.practice.userservice.domain.Role.*;
-import static java.lang.String.format;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.practice.userservice.domain.User;
