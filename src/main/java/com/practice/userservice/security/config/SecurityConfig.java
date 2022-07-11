@@ -3,12 +3,10 @@ package com.practice.userservice.security.config;
 import static com.practice.userservice.domain.Role.ROLE_USER;
 import static org.springframework.http.HttpMethod.GET;
 
-import com.practice.userservice.domain.Role;
 import com.practice.userservice.security.filter.JwtAuthenticationFilter;
 import com.practice.userservice.security.handler.OAuth2SuccessHandler;
 import com.practice.userservice.service.CustomOAuth2UserService;
 import com.practice.userservice.service.TokenService;
-import com.practice.userservice.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -42,7 +40,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http.authorizeRequests().antMatchers("/token/**","/login/**").permitAll();
 
         // 순서 2
-        http.authorizeRequests().antMatchers(GET, "/api/user/**").hasAnyAuthority(ROLE_USER.name);
+        http.authorizeRequests().antMatchers(GET, "/api/user/**").hasAnyAuthority(ROLE_USER.stringValue);
 
         // 순서 3
         http.authorizeRequests().anyRequest().authenticated(); // 인증 필요

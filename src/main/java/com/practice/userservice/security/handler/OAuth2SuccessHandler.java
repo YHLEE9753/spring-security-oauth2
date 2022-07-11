@@ -1,6 +1,7 @@
 package com.practice.userservice.security.handler;
 
 import static com.practice.userservice.domain.Role.*;
+import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.practice.userservice.domain.User;
@@ -52,15 +53,16 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
             ));
 
         // 토큰 생성
-        Token token = tokenService.generateToken(email, ROLE_USER.name);
+        Token token = tokenService.generateToken(email, ROLE_USER.stringValue);
+        String tokenType = "Bearer ";
 
-        writeTokenResponse(response, token);
+        writeTokenResponse(response, token, tokenType);
     }
 
-    private void writeTokenResponse(HttpServletResponse response, Token token)
+    private void writeTokenResponse(HttpServletResponse response, Token token, String tokenType)
         throws IOException {
         response.setContentType("text/html;charset=UTF-8");
-        response.addHeader("Auth", token.getToken());
+        response.addHeader(AUTHORIZATION, tokenType + token.getAccessToken());
         response.addHeader("Refresh", token.getRefreshToken());
         response.setContentType("application/json;charset=UTF-8");
 

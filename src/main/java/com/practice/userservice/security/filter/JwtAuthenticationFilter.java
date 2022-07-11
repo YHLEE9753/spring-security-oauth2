@@ -1,10 +1,13 @@
 package com.practice.userservice.security.filter;
 
+import static org.springframework.http.HttpHeaders.AUTHORIZATION;
+
 import com.practice.userservice.service.TokenService;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Optional;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
@@ -25,7 +28,8 @@ public class JwtAuthenticationFilter extends GenericFilterBean {
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
         throws IOException, ServletException, ServletException {
-        String token = ((HttpServletRequest)request).getHeader("Auth");
+        Optional<String> tokenHeader = Optional.ofNullable(((HttpServletRequest)request).getHeader(AUTHORIZATION));
+        String token = tokenHeader.isPresent() ? tokenService.changeToToken(tokenHeader.get()) : null;
 
         // 토큰이 있는지, 유효한지 검증
         if (token != null && tokenService.verifyToken(token)) {

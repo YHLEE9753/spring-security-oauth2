@@ -1,5 +1,7 @@
 package com.practice.userservice.service;
 
+import static com.practice.userservice.domain.Role.ROLE_USER;
+
 import com.practice.userservice.domain.User;
 import com.practice.userservice.repository.UserRepo;
 import java.util.Collections;
@@ -45,7 +47,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 
         // 생성된 OAuth 유저에 User 권한을 부여한 후 반환한다.
         return new DefaultOAuth2User(
-            Collections.singleton(new SimpleGrantedAuthority("ROLE_USER")),
+            Collections.singleton(new SimpleGrantedAuthority(ROLE_USER.stringValue)),
             memberAttribute, "email"
         );
     }

@@ -1,8 +1,8 @@
 package com.practice.userservice.api;
 
 import static com.practice.userservice.domain.Role.ROLE_USER;
+import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
-import com.practice.userservice.domain.Role;
 import com.practice.userservice.service.Token;
 import com.practice.userservice.service.TokenService;
 import javax.servlet.http.HttpServletRequest;
@@ -30,9 +30,9 @@ public class TokenController {
 
         if (token != null && tokenService.verifyToken(token)) {
             String email = tokenService.getUid(token);
-            Token newToken = tokenService.generateToken(email, ROLE_USER.name);
+            Token newToken = tokenService.generateToken(email, ROLE_USER.stringValue);
 
-            response.addHeader("Auth", newToken.getToken());
+            response.addHeader(AUTHORIZATION, newToken.getAccessToken());
             response.addHeader("Refresh", newToken.getRefreshToken());
             response.setContentType("application/json;charset=UTF-8");
 
