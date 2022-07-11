@@ -16,18 +16,14 @@ import org.springframework.stereotype.Service;
 public class TokenService {
     private final OAuthYamlRead oAuthYamlRead;
     private String secretKey;
-    private long tokenPeriod;
-    private long refreshPeriod;
+    private final long tokenPeriod;
+    private final long refreshPeriod;
 
     public TokenService(OAuthYamlRead oAuthYamlRead) {
         this.oAuthYamlRead = oAuthYamlRead;
         this.secretKey = oAuthYamlRead.getTokenSecret();
         this.tokenPeriod = oAuthYamlRead.getTokenExpiry();
         this.refreshPeriod = oAuthYamlRead.getRefreshTokenExpiry();
-    }
-
-    @PostConstruct // 의존성 주입 후 초기화(Key 생성)
-    protected void init() {
         secretKey = Base64.getEncoder().encodeToString(secretKey.getBytes());
     }
 
