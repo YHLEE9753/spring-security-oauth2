@@ -8,7 +8,7 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/oauth_login_tutorial?useSSL=false&serverTimezone=UTC&useLegacyDatetimeCode=false&allowPublicKeyRetrieval=true
     username: root
-    password: dydrkfl53!
+    password:
     hikari:
       pool-name: jpa-hikari-pool
       maximum-pool-size: 5
@@ -40,16 +40,16 @@ spring:
       client:
         registration:
           naver:
-            client-id: Zdnyv4wVbJNO9SGSm77u
-            client-secret: hgBPXiUiIU
+            client-id: { client-id }
+            client-secret: { secret }
             redirect-uri: http://localhost:8080/login/oauth2/code/naver
             authorization-grant-type: authorization_code
             scope:
               - name
               - email
           google:
-            client-id: 318403558005-cd12ejrmi7m0vrancso0g673fqkkj97a.apps.googleusercontent.com
-            client-secret: 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
+            client-id: { client-id }
+            client-secret: { secret }
             scope:
                - profile
                - email
