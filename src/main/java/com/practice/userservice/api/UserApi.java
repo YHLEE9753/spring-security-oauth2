@@ -1,9 +1,12 @@
 package com.practice.userservice.api;
 
 
+import static org.springframework.http.HttpHeaders.AUTHORIZATION;
+
 import com.practice.userservice.domain.User;
 import com.practice.userservice.service.UserService;
 import java.util.List;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +28,10 @@ public class UserApi {
 
     @GetMapping("/logout")
     public void logout(HttpServletRequest request, HttpServletResponse response){
-
+        Cookie cookie = new Cookie("refreshToken", null);
+        cookie.setMaxAge(0);
+        response.addCookie(cookie);
+        response.setHeader(AUTHORIZATION, null);
     }
 
     @GetMapping("/users")

@@ -17,6 +17,10 @@ import org.springframework.stereotype.Service;
 public class TokenService {
     // 추가 리펙토링 필요
     private String secretKey = "tokensecretkeydoublecaseqwdqwdqwdqwdqwdqwdwqdqwdq";
+    // AccessToken 만료기간 : 10분
+    long tokenPeriod = 1000L * 60L * 10L;
+    // RefreshToken 만료기간 : 3주
+    long refreshPeriod = 1000L * 60L * 60L * 24L * 30L * 3L;
 
     @PostConstruct // 의존성 주입 후 초기화(Key 생성)
     protected void init() {
@@ -25,10 +29,6 @@ public class TokenService {
 
     // 토큰 생성
     public Token generateToken(String uid, String role) {
-        // AccessToken 만료기간 : 10분
-        long tokenPeriod = 1000L * 60L * 10L;
-        // RefreshToken 만료기간 : 3주
-        long refreshPeriod = 1000L * 60L * 60L * 24L * 30L * 3L;
 
         // Claims 에 권한 설정(uid : email(식별자))
         Claims claims = Jwts.claims().setSubject(uid);
@@ -85,5 +85,9 @@ public class TokenService {
 
     public String changeToToken(String header) {
         return header.substring("Bearer ".length());
+    }
+
+    public long getRefreshPeriod() {
+        return refreshPeriod;
     }
 }
