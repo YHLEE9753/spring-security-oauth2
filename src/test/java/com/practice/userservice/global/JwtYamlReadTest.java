@@ -1,23 +1,21 @@
 package com.practice.userservice.global;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class OAuthYamlReadTest {
+class JwtYamlReadTest {
     @Autowired
-    private OAuthYamlRead oAuthYamlRead;
+    private JwtYamlRead jwtYamlRead;
 
     @Test
     void yamlFileTest () {
         // given
         // when
         // then
-        System.out.println(oAuthYamlRead.getTokenExpiry());
-        System.out.println(oAuthYamlRead.getRefreshTokenExpiry());
-        System.out.println(oAuthYamlRead.getTokenSecret());
+        System.out.println(jwtYamlRead.getTokenExpiry());
+        System.out.println(jwtYamlRead.getRefreshTokenExpiry());
+        System.out.println(jwtYamlRead.getTokenSecret());
     }
 }

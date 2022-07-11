@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 @Component
 @Getter
 @Setter
-public class OAuthYamlRead {
+public class JwtYamlRead {
     private String tokenSecret;
     private long tokenExpiry;
     private long refreshTokenExpiry;

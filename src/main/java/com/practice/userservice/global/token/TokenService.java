@@ -1,29 +1,28 @@
 package com.practice.userservice.global.token;
 
-import com.practice.userservice.global.OAuthYamlRead;
+import com.practice.userservice.global.JwtYamlRead;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import java.util.Base64;
 import java.util.Date;
-import javax.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 @Service
 @Slf4j
 public class TokenService {
-    private final OAuthYamlRead oAuthYamlRead;
+    private final JwtYamlRead jwtYamlRead;
     private String secretKey;
     private final long tokenPeriod;
     private final long refreshPeriod;
 
-    public TokenService(OAuthYamlRead oAuthYamlRead) {
-        this.oAuthYamlRead = oAuthYamlRead;
-        this.secretKey = oAuthYamlRead.getTokenSecret();
-        this.tokenPeriod = oAuthYamlRead.getTokenExpiry();
-        this.refreshPeriod = oAuthYamlRead.getRefreshTokenExpiry();
+    public TokenService(JwtYamlRead jwtYamlRead) {
+        this.jwtYamlRead = jwtYamlRead;
+        this.secretKey = jwtYamlRead.getTokenSecret();
+        this.tokenPeriod = jwtYamlRead.getTokenExpiry();
+        this.refreshPeriod = jwtYamlRead.getRefreshTokenExpiry();
         secretKey = Base64.getEncoder().encodeToString(secretKey.getBytes());
     }
 

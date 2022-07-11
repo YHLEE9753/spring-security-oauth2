@@ -1,4 +1,6 @@
 spring:
+  application:
+    name: spring security oauth2
   profiles:
     active: local
   # DB
@@ -32,7 +34,7 @@ spring:
         order_inserts: true
         order_updates: true
         format_sql: true
-  # Security OAuth
+# Security OAuth
   security:
     oauth2:
       client:
@@ -49,28 +51,27 @@ spring:
             client-id: 318403558005-cd12ejrmi7m0vrancso0g673fqkkj97a.apps.googleusercontent.com
             client-secret: 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
             scope:
-              - profile
-              - email
+               - profile
+               - email
         provider:
           naver:
             authorization-uri: https://nid.naver.com/oauth2.0/authorize
             token-uri: https://nid.naver.com/oauth2.0/token
             user-info-uri: https://openapi.naver.com/v1/nid/me
             user-name-attribute: response
-
 # cors
-cors:
-  allowed-origins: 'http://localhost:3000'
-  allowed-methods: GET,POST,PUT,DELETE,OPTIONS
-  allowed-headers: '*'
-  max-age: 3600
-
-# jwt secret key
 app:
+  cors:
+    allowed-origins: 'http://localhost:3000'
+    allowed-methods: GET,POST,PUT,DELETE,OPTIONS
+    allowed-headers: '*'
+    max-age: 3600
+  # jwt secret key
   jwt:
     tokenSecret: 926D96C90030DD58429D2751AC1BDBBC
     tokenExpiry: 600000
     refreshTokenExpiry: 7776000000
+
   oauth2:
     authorizedRedirectUris:
       - http://localhost:3000/oauth/redirect
