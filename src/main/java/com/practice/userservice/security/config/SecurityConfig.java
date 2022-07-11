@@ -1,10 +1,9 @@
-package com.practice.userservice.config;
+package com.practice.userservice.security.config;
 
 import static org.springframework.http.HttpMethod.GET;
-import static org.springframework.http.HttpMethod.POST;
 
 import com.practice.userservice.security.filter.JwtAuthenticationFilter;
-import com.practice.userservice.security.oauth.OAuth2SuccessHandler;
+import com.practice.userservice.security.handler.OAuth2SuccessHandler;
 import com.practice.userservice.service.CustomOAuth2UserService;
 import com.practice.userservice.service.TokenService;
 import com.practice.userservice.service.UserService;
@@ -49,7 +48,5 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
         http.oauth2Login().successHandler(successHandler).userInfoEndpoint().userService(oAuth2UserService);
         http.addFilterBefore(new JwtAuthenticationFilter(tokenService, userService), UsernamePasswordAuthenticationFilter.class);
-//        http.addFilterBefore(new JwtAuthorizationFilter(), UsernamePasswordAuthenticationFilter.class); // 인증이 맨앞에
-
     }
 }

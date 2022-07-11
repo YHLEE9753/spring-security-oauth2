@@ -1,4 +1,4 @@
-package com.practice.userservice.security.oauth;
+package com.practice.userservice.security.handler;
 
 import static com.practice.userservice.domain.Role.*;
 import static java.lang.String.format;
