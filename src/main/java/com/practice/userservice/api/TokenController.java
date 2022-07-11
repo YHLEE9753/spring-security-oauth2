@@ -6,19 +6,22 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RequiredArgsConstructor
 @RestController
+@RequestMapping("/token")
 public class TokenController {
     private final TokenService tokenService;
 
-    @GetMapping("/token/expired")
+    @GetMapping("/expired")
     public String auth() {
         throw new RuntimeException();
     }
 
-    @GetMapping("/token/refresh")
+    @PostMapping("/refresh")
     public String refreshAuth(HttpServletRequest request, HttpServletResponse response) {
         String token = request.getHeader("Refresh");
 

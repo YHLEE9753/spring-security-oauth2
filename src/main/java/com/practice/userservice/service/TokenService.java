@@ -4,6 +4,10 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.security.Keys;
+import java.nio.charset.StandardCharsets;
+import java.security.Key;
 import java.util.Base64;
 import java.util.Date;
 import javax.annotation.PostConstruct;
@@ -14,7 +18,9 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class TokenService {
     // 추가 리펙토링 필요
-    private String secretKey = "token-secret-key-double-caseqwdqwdqwdqwdqwdqwdwqdqwdq";
+    private String secretKey = "tokensecretkeydoublecaseqwdqwdqwdqwdqwdqwdwqdqwdq";
+    byte[] keyBytes = Decoders.BASE64.decode(secretKey);
+    Key key = Keys.hmacShaKeyFor(keyBytes);
 
     @PostConstruct // 의존성 주입 후 초기화(Key 생성)
     protected void init() {
@@ -39,20 +45,22 @@ public class TokenService {
                 .setClaims(claims)
                 .setIssuedAt(now)
                 .setExpiration(new Date(now.getTime() + tokenPeriod))
-                .signWith(SignatureAlgorithm.HS256, secretKey)
+                .signWith(key)
                 .compact(),
+
             Jwts.builder()
                 .setClaims(claims)
                 .setIssuedAt(now)
                 .setExpiration(new Date(now.getTime() + refreshPeriod))
-                .signWith(SignatureAlgorithm.HS256, secretKey)
+                .signWith(key)
                 .compact());
     }
 
     public boolean verifyToken(String token) {
         try {
-            Jws<Claims> claims = Jwts.parser()
-                .setSigningKey(secretKey)
+            Jws<Claims> claims = Jwts.parserBuilder()
+                .setSigningKey(getSignKey())
+                .build()
                 .parseClaimsJws(token);
             return claims.getBody()
                 .getExpiration()
@@ -63,6 +71,15 @@ public class TokenService {
     }
 
     public String getUid(String token) {
-        return Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).getBody().getSubject();
+        return Jwts.parserBuilder()
+            .setSigningKey(getSignKey())
+            .build()
+            .parseClaimsJws(token)
+            .getBody()
+            .getSubject();
+    }
+
+    private Key getSignKey(){
+        return Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
     }
 }

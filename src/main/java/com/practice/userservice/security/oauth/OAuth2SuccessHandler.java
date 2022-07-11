@@ -39,7 +39,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
         // 최초 로그인이라면 회원가입 처리를 한다.
         userService.getUser(userAuthenticationDto.getEmail())
-            .orElse(userService.saveUser(
+            .orElseGet(() ->userService.saveUser(
                 User.builder()
                     .username(userAuthenticationDto.getEmail())
                     .name(userAuthenticationDto.getName())
