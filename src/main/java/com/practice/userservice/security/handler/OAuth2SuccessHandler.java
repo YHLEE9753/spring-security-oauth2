@@ -9,6 +9,7 @@ import com.practice.userservice.service.TokenService;
 import com.practice.userservice.service.UserService;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Map;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -34,19 +35,24 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
         throws IOException, ServletException {
         // 인증 된 principal 를 가지고 온다.
         OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
-        UserAuthenticationDto userAuthenticationDto = UserRequestMapper.toDto(oAuth2User);
+        Map<String, Object> attributes = oAuth2User.getAttributes();
+        String email = (String) attributes.get("email");
+        String name = (String) attributes.get("name");
+        String picture = (String) attributes.get("picture");
 
-        // 최초 로그인이라면 회원가입 처리를 한다.
-        userService.getUser(userAuthenticationDto.getEmail())
+        // 최초 로그인이라면 회원가입 처리를 한다.(User 로 회원가입)
+        userService.getUser(email)
             .orElseGet(() -> userService.saveUser(
                 User.builder()
-                    .username(userAuthenticationDto.getEmail())
-                    .name(userAuthenticationDto.getName())
+                    .username(email)
+                    .name(name)
+                    .picture(picture)
+                    .role(ROLE_USER)
                     .build()
             ));
 
         // 토큰 생성
-        Token token = tokenService.generateToken(userAuthenticationDto.getEmail(), ROLE_USER.name);
+        Token token = tokenService.generateToken(email, ROLE_USER.name);
 
         writeTokenResponse(response, token);
     }
