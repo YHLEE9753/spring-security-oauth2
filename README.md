@@ -174,12 +174,12 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
         throws IOException, ServletException {
         // 인증 된 principal 를 가지고 온다.
         OAuth2User oAuth2User = (OAuth2User)authentication.getPrincipal();
-        UserDto userDto = userRequestMapper.toDto(oAuth2User);
+        UserDto userAuthenticationDto = userRequestMapper.toDto(oAuth2User);
 
         // (추후 리팩토링) 최초 로그인이라면 회원가입 처리를 한다.
 
         // 토큰 생성
-        Token token = tokenService.generateToken(userDto.getEmail(), "USER");
+        Token token = tokenService.generateToken(userAuthenticationDto.getEmail(), "USER");
         log.info("{}", token);
 
         writeTokenResponse(response, token);
@@ -244,12 +244,12 @@ public class JwtAuthFilter extends GenericFilterBean {
             String email = tokenService.getUid(token);
 
             // DB연동을 안했으니 이메일 정보로 유저를 만들어주겠습니다
-            UserDto userDto = UserDto.builder()
+            UserDto userAuthenticationDto = UserDto.builder()
                 .email(email)
                 .name("이름")
                 .picture("프로필 이미지").build();
 
-            Authentication auth = getAuthentication(userDto);
+            Authentication auth = getAuthentication(userAuthenticationDto);
             SecurityContextHolder.getContext().setAuthentication(auth);
         }
 
