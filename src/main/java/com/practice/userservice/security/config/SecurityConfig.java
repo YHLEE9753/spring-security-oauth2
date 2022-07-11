@@ -1,7 +1,9 @@
 package com.practice.userservice.security.config;
 
+import static com.practice.userservice.domain.Role.ROLE_USER;
 import static org.springframework.http.HttpMethod.GET;
 
+import com.practice.userservice.domain.Role;
 import com.practice.userservice.security.filter.JwtAuthenticationFilter;
 import com.practice.userservice.security.handler.OAuth2SuccessHandler;
 import com.practice.userservice.service.CustomOAuth2UserService;
@@ -22,7 +24,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private final CustomOAuth2UserService oAuth2UserService;
     private final OAuth2SuccessHandler successHandler;
     private final TokenService tokenService;
-    private final UserService userService;
 
     @Bean
     @Override
@@ -41,12 +42,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http.authorizeRequests().antMatchers("/token/**","/login/**").permitAll();
 
         // 순서 2
-        http.authorizeRequests().antMatchers(GET, "/api/user/**").hasAnyAuthority("ROLE_USER");
+        http.authorizeRequests().antMatchers(GET, "/api/user/**").hasAnyAuthority(ROLE_USER.name);
 
         // 순서 3
         http.authorizeRequests().anyRequest().authenticated(); // 인증 필요
 
         http.oauth2Login().successHandler(successHandler).userInfoEndpoint().userService(oAuth2UserService);
-        http.addFilterBefore(new JwtAuthenticationFilter(tokenService, userService), UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(new JwtAuthenticationFilter(tokenService), UsernamePasswordAuthenticationFilter.class);
     }
 }

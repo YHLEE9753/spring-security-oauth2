@@ -1,14 +1,9 @@
 package com.practice.userservice.service;
 
-import com.practice.userservice.utils.TokenUtils;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.io.Decoders;
-import io.jsonwebtoken.security.Keys;
-import java.nio.charset.StandardCharsets;
-import java.security.Key;
 import java.util.Base64;
 import java.util.Date;
 import javax.annotation.PostConstruct;
@@ -61,8 +56,7 @@ public class TokenService {
             Jws<Claims> claims = Jwts.parser()
                 .setSigningKey(secretKey)
                 .parseClaimsJws(token);
-            log.info("{}",claims.getBody().getExpiration());
-            log.info("{}",new Date());
+
             return claims.getBody()
                 .getExpiration()
                 .after(new Date());
@@ -75,11 +69,17 @@ public class TokenService {
         return new String [] {
             (String) Jwts.parser()
                 .setSigningKey(secretKey)
-                .parseClaimsJws(token).getBody().get("role")
+                .parseClaimsJws(token)
+                .getBody()
+                .get("role")
         };
     }
 
     public String getUid(String token) {
-        return Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).getBody().getSubject();
+        return Jwts.parser()
+            .setSigningKey(secretKey)
+            .parseClaimsJws(token)
+            .getBody()
+            .getSubject();
     }
 }

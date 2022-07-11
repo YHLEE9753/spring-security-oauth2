@@ -1,5 +1,8 @@
 package com.practice.userservice.api;
 
+import static com.practice.userservice.domain.Role.ROLE_USER;
+
+import com.practice.userservice.domain.Role;
 import com.practice.userservice.service.Token;
 import com.practice.userservice.service.TokenService;
 import javax.servlet.http.HttpServletRequest;
@@ -27,7 +30,7 @@ public class TokenController {
 
         if (token != null && tokenService.verifyToken(token)) {
             String email = tokenService.getUid(token);
-            Token newToken = tokenService.generateToken(email, "USER");
+            Token newToken = tokenService.generateToken(email, ROLE_USER.name);
 
             response.addHeader("Auth", newToken.getToken());
             response.addHeader("Refresh", newToken.getRefreshToken());

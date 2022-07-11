@@ -471,7 +471,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
         // 최초 로그인이라면 회원가입 처리를 한다.
         userService.getUser(userAuthenticationDto.getEmail())
-            .orElse(userService.saveUser(
+            .orElseGet(userService.saveUser(
                 User.builder()
                     .username(userAuthenticationDto.getEmail())
                     .name(userAuthenticationDto.getName())
@@ -516,4 +516,66 @@ public class UserApi {
 
 
 # 4. Refactoring
+## 1. Jwts depreciated
+- 다음 signWith 부분에서 depreciated 가 발생하였다.
+- 다음 Jwts.parser() 부분에서 depreciated 가 발생하였다.
+- 하지만 코드 수정 시 verifier 에서 오류가 발생하였다.
+- 추후 리펙토링 예정
+```java
+private String secretKey = "token-secret-key-double-caseqwdqwdqwdqwdqwdqwdwqdqwdq";
+
+Jwts.builder()
+    .setClaims(claims)
+    .setIssuedAt(now)
+    .setExpiration(new Date(now.getTime() + tokenPeriod))
+    .signWith(SignatureAlgorithm.HS256, secretKey)
+    .compact();
+
+Jws<Claims> claims = Jwts.parser()
+    .setSigningKey(secretKey)
+    .parseClaimsJws(token);
+```
+- 다음과 같이 수정하여 주었다.
+- 이때 - 는 Base64 에서 decode 가 불가능하므로 key 값을 수정하였다.
+- parser 대신 parserBuilder 와 build 가 사용되었고, setSigningKey 의 인자로 기존 String 에서 Key 로 변경되었다.
+```java
+private String secretKey = "tokensecretkeydoublecaseqwdqwdqwdqwdqwdqwdwqdqwdq";
+byte[] keyBytes = Decoders.BASE64.decode(secretKey);
+Key key = Keys.hmacShaKeyFor(keyBytes);
+    
+Jwts.builder()
+    .setClaims(claims)
+    .setIssuedAt(now)
+    .setExpiration(new Date(now.getTime() + tokenPeriod))
+    .signWith(key)
+    .compact();
+
+Jws<Claims> claims = Jwts.parserBuilder()
+    .setSigningKey(getSignKey())
+    .build()
+    .parseClaimsJws(token);
+
+private Key getSignKey(){
+    return Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
+    }
+```
+
+## IncorrectResultSizeDataAccessException: query did not return a unique result
+> orElse는 null이던말던 항상 불립니다.
+> orElseGet은 null일 때만 불립니다.
+
+- orElse 를 사용하여 반복적으로 회원가입을 진행시키고 있었다.
+- orElse 를 orElseGet 으로 변경하였고 db 를 초기화 하였다.
+- 항상 주의하자...
+```java
+        // 최초 로그인이라면 회원가입 처리를 한다.
+        userService.getUser(userAuthenticationDto.getEmail())
+            //.orElse(() ->userService.saveUser(
+            .orElseGet(() ->userService.saveUser(
+                User.builder()
+                    .username(userAuthenticationDto.getEmail())
+                    .name(userAuthenticationDto.getName())
+                    .build()
+            ));
+```
 

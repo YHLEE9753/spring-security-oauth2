@@ -1,4 +1,4 @@
-package com.practice.userservice.security;
+package com.practice.userservice.security.handler;
 
 import lombok.Builder;
 import lombok.Getter;

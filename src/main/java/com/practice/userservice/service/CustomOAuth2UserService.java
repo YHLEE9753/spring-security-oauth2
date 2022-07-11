@@ -40,8 +40,6 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
         OAuth2Attribute oAuth2Attribute = OAuth2Attribute.of(registrationId, userNameAttributeName,
             oAuth2User.getAttributes());
 
-        log.info("{}", oAuth2Attribute);
-
         // 생성된 Attribute 를 Map 으로 convert 한다.
         Map<String, Object> memberAttribute = oAuth2Attribute.convertToMap();
 

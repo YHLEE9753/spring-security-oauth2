@@ -1,6 +1,5 @@
-package com.practice.userservice.security;
+package com.practice.userservice.security.handler;
 
-import com.practice.userservice.security.UserAuthenticationDto;
 import java.util.Map;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 
