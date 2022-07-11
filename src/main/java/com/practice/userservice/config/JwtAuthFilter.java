@@ -24,14 +24,15 @@ public class JwtAuthFilter extends GenericFilterBean {
         throws IOException, ServletException, ServletException {
         String token = ((HttpServletRequest)request).getHeader("Auth");
 
+        // 토큰이 있는지, 유효한지 검증
         if (token != null && tokenService.verifyToken(token)) {
             String email = tokenService.getUid(token);
 
             // DB연동을 안했으니 이메일 정보로 유저를 만들어주겠습니다
             UserDto userDto = UserDto.builder()
                 .email(email)
-                .name("이름이에용")
-                .picture("프로필 이미지에요").build();
+                .name("이름")
+                .picture("프로필 이미지").build();
 
             Authentication auth = getAuthentication(userDto);
             SecurityContextHolder.getContext().setAuthentication(auth);
@@ -40,6 +41,7 @@ public class JwtAuthFilter extends GenericFilterBean {
         chain.doFilter(request, response);
     }
 
+    // UsernamePasswordAuthenticationToken 생성
     public Authentication getAuthentication(UserDto member) {
         return new UsernamePasswordAuthenticationToken(member, "",
             Arrays.asList(new SimpleGrantedAuthority("ROLE_USER")));

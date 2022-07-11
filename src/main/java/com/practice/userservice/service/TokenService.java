@@ -11,21 +11,27 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class TokenService {
+    // 추가 리펙토링 필요
     private String secretKey = "token-secret-key-double-caseqwdqwdqwdqwdqwdqwdwqdqwdq";
 
-    @PostConstruct
+    @PostConstruct // 의존성 주입 후 초기화(Key 생성)
     protected void init() {
         secretKey = Base64.getEncoder().encodeToString(secretKey.getBytes());
     }
 
+    // 토큰 생성
     public Token generateToken(String uid, String role) {
+        // AccessToken 만료기간 : 10분
         long tokenPeriod = 1000L * 60L * 10L;
+        // RefreshToken 만료기간 : 3주
         long refreshPeriod = 1000L * 60L * 60L * 24L * 30L * 3L;
 
+        // Claims 에 권한 설정(uid : email(식별자))
         Claims claims = Jwts.claims().setSubject(uid);
         claims.put("role", role);
 
         Date now = new Date();
+        // AccessToken, RefreshToken 를 Token 에 담아 반환한다.
         return new Token(
             Jwts.builder()
                 .setClaims(claims)

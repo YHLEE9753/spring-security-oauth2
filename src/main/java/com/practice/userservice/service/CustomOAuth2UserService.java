@@ -25,13 +25,16 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
         String userNameAttributeName = userRequest.getClientRegistration().getProviderDetails()
             .getUserInfoEndpoint().getUserNameAttributeName();
 
+        // 각 인증 서버에 맞게 OAuth Attribute 를 생성한다.
         OAuth2Attribute oAuth2Attribute = OAuth2Attribute.of(registrationId, userNameAttributeName,
             oAuth2User.getAttributes());
 
         log.info("{}", oAuth2Attribute);
 
+        // 생성된 Attribute 를 Map 으로 convert 한다.
         Map<String, Object> memberAttribute = oAuth2Attribute.convertToMap();
 
+        // 생성된 OAuth 유저에 User 권한을 부여한 후 반환한다.
         return new DefaultOAuth2User(
             Collections.singleton(new SimpleGrantedAuthority("ROLE_USER")),
             memberAttribute, "email"

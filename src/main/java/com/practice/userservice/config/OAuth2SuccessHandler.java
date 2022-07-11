@@ -25,11 +25,13 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication)
         throws IOException, ServletException {
+        // 인증 된 principal 를 가지고 온다.
         OAuth2User oAuth2User = (OAuth2User)authentication.getPrincipal();
         UserDto userDto = userRequestMapper.toDto(oAuth2User);
 
-        // 최초 로그인이라면 회원가입 처리를 한다.
+        // (추후 리팩토링) 최초 로그인이라면 회원가입 처리를 한다.
 
+        // 토큰 생성
         Token token = tokenService.generateToken(userDto.getEmail(), "USER");
         log.info("{}", token);
 

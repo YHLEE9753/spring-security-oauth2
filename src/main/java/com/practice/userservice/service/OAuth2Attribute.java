@@ -18,16 +18,16 @@ public class OAuth2Attribute {
     private String picture;
 
     static OAuth2Attribute of(String provider, String attributeKey,
-        Map<String, Object> attributes) {
-        switch (provider) {
-            case "google":
-                return ofGoogle(attributeKey, attributes);
-            case "kakao":
-                return ofKakao("email", attributes);
-            case "naver":
-                return ofNaver("id", attributes);
-            default:
-                throw new RuntimeException();
+                Map<String, Object> attributes) {
+                switch (provider) {
+                    case "google":
+                        return ofGoogle(attributeKey, attributes);
+                    case "kakao":
+                        return ofKakao("email", attributes);
+                    case "naver":
+                        return ofNaver("id", attributes);
+                    default:
+                        throw new RuntimeException();
         }
     }
 
@@ -69,7 +69,7 @@ public class OAuth2Attribute {
             .build();
     }
 
-    Map<String, Object> convertToMap() {
+    public Map<String, Object> convertToMap() {
         Map<String, Object> map = new HashMap<>();
         map.put("id", attributeKey);
         map.put("key", attributeKey);

@@ -18,12 +18,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http.httpBasic().disable();
-        http.csrf().disable();
+        http.httpBasic().disable(); // rest api -> http 로그인 페이지 폼 X
+        http.csrf().disable(); // rest api -> csrf 보안 X
         http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
         http.authorizeRequests()
             .antMatchers("/token/**").permitAll()
-            .anyRequest().authenticated();
+            .anyRequest().authenticated(); // 인증 필요
         http.oauth2Login().successHandler(successHandler).userInfoEndpoint().userService(oAuth2UserService);
 
         http.addFilterBefore(new JwtAuthFilter(tokenService), UsernamePasswordAuthenticationFilter.class);
