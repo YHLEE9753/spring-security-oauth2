@@ -8,7 +8,7 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/oauth_login_tutorial?useSSL=false&serverTimezone=UTC&useLegacyDatetimeCode=false&allowPublicKeyRetrieval=true
     username: root
-    password:
+    password: ENC(JQfH5Ckmyq0BwPSylv5o+DUGcqfGgBB+)
     hikari:
       pool-name: jpa-hikari-pool
       maximum-pool-size: 5
@@ -40,19 +40,19 @@ spring:
       client:
         registration:
           naver:
-            client-id: { client-id }
-            client-secret: { secret }
+            client-id: ENC(DNf1SeHYTxyyG9dJTGwSVAN8E3kXBTJUwD7nY2S7Ak8=)
+            client-secret: ENC(+gIL8lfla1khvDTeN5iNH2/JeovNx6F2)
             redirect-uri: http://localhost:8080/login/oauth2/code/naver
             authorization-grant-type: authorization_code
             scope:
               - name
               - email
-          google:
-            client-id: { client-id }
-            client-secret: { secret }
-            scope:
-               - profile
-               - email
+#          google:
+#            client-id: { client-id }
+#            client-secret: { secret }
+#            scope:
+#               - profile
+#               - email
         provider:
           naver:
             authorization-uri: https://nid.naver.com/oauth2.0/authorize
@@ -68,7 +68,7 @@ app:
     max-age: 3600
   # jwt secret key
   jwt:
-    tokenSecret: 926D96C90030DD58429D2751AC1BDBBC
+    tokenSecret: ENC(ue4i7O795mbBVZEgETESWrl9m5L/Mw+rhsYEejK1MfyGb3Hkatdfpnb2vTLy+bYC)
     tokenExpiry: 600000
     refreshTokenExpiry: 7776000000
 

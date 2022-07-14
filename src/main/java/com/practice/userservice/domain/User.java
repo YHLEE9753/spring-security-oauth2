@@ -21,6 +21,7 @@ public class User {
     private String name;
     private String username; // john123 or email 도 String 이므로 가능하다
     private String picture;
+
     @Enumerated(EnumType.STRING)
     private Role role;
 
