@@ -1,4 +1,3 @@
-[submoduels "spring-security-oauth2-submodules"]
-	branch = main
-[submodul "spring-security-oauth2-submodule"]
-	branch = main
+[submodule "spring-security-oauth2-config"]
+	path = spring-security-oauth2-config
+	url = https://github.com/YHLEE9753/spring-security-oauth2-config.git

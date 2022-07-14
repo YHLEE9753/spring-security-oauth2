@@ -6,6 +6,8 @@ build/
 !**/src/test/**/build/
 
 ### SubModule ###
+application-config.yml
+application-config.yaml
 
 ### STS ###
 .apt_generated
