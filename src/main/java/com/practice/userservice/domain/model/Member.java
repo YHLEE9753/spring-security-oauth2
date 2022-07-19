@@ -1,4 +1,4 @@
-package com.practice.userservice.domain;
+package com.practice.userservice.domain.model;
 
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -9,27 +9,29 @@ import javax.persistence.Id;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import javax.persistence.Table;
 
 
 @Entity
 @Getter
+@Table(name = "member")
 @NoArgsConstructor
-public class User {
+public class Member {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     private String name;
-    private String username; // john123 or email 도 String 이므로 가능하다
+    private String email;
     private String picture;
 
     @Enumerated(EnumType.STRING)
     private Role role;
 
     @Builder
-    public User(Long id, String name, String username, String picture, Role role) {
+    public Member(Long id, String name, String email, String picture, Role role) {
         this.id = id;
         this.name = name;
-        this.username = username;
+        this.email = email;
         this.picture = picture;
         this.role = role;
     }

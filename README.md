@@ -91,15 +91,15 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 
     @Override
     @Transactional
-    public User saveUser(User user) {
-        log.info("Saving new user {} to the database", user.getName());
-        return userRepo.save(user);
+    public User saveUser(User member) {
+        log.info("Saving new member {} to the database", member.getName());
+        return userRepo.save(member);
     }
 
     @Override
     @Transactional(readOnly = true)
     public Optional<User> getUser(String username) {
-        log.info("Fetching user {}", username);
+        log.info("Fetching member {}", username);
         return userRepo.findByUsername(username);
     }
 
@@ -172,11 +172,11 @@ public class TokenService {
                 .compact());
     }
 
-    public boolean verifyToken(String token) {
+    public boolean verifyToken(String tokens) {
         try {
             Jws<Claims> claims = Jwts.parser()
                 .setSigningKey(secretKey)
-                .parseClaimsJws(token);
+                .parseClaimsJws(tokens);
 
             return claims.getBody()
                 .getExpiration()
@@ -186,20 +186,20 @@ public class TokenService {
         }
     }
 
-    public String [] getRole(String token) {
+    public String [] getRole(String tokens) {
         return new String [] {
             (String) Jwts.parser()
                 .setSigningKey(secretKey)
-                .parseClaimsJws(token)
+                .parseClaimsJws(tokens)
                 .getBody()
                 .get("role")
         };
     }
 
-    public String getUid(String token) {
+    public String getUid(String tokens) {
         return Jwts.parser()
             .setSigningKey(secretKey)
-            .parseClaimsJws(token)
+            .parseClaimsJws(tokens)
             .getBody()
             .getSubject();
     }
@@ -217,7 +217,7 @@ public class TokenService {
 ## 6. OAuth2 로그인 성공시 핸들러에서 토큰을 생성 후 response header에 추가해서 보내준다.
 - 핸들러에서 유저 서비스를 이용하여 회원가입 및 로그인 처리가 가능하다
 - failure handler 를 통해 추가로 로그인 연속 실패 시 로직도 추가할 수 있다.
-- Authentication 에 성공한 경우 token 을 발행한다.
+- Authentication 에 성공한 경우 tokens 을 발행한다.
 - AccessToken 은 body 에 담아서 전달하고, RefreshToken 은 http only Cookie 에 담아서 전달한다.
     - [LocalStorage vs. Cookies: JWT 토큰을 안전하게 저장하기 위해 알아야할 모든것](https://hshine1226.medium.com/localstorage-vs-cookies-jwt-%ED%86%A0%ED%81%B0%EC%9D%84-%EC%95%88%EC%A0%84%ED%95%98%EA%B2%8C-%EC%A0%80%EC%9E%A5%ED%95%98%EA%B8%B0-%EC%9C%84%ED%95%B4-%EC%95%8C%EC%95%84%EC%95%BC%ED%95%A0-%EB%AA%A8%EB%93%A0%EA%B2%83-4fb7fb41327c)
 
@@ -254,19 +254,19 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
             ));
 
         // 토큰 생성
-        Token token = tokenService.generateToken(email, ROLE_USER.stringValue);
+        Token tokens = tokenService.generateToken(email, ROLE_USER.stringValue);
 
-        writeTokenResponse(response, token);
+        writeTokenResponse(response, tokens);
     }
 
-    private void writeTokenResponse(HttpServletResponse response, Token token)
+    private void writeTokenResponse(HttpServletResponse response, Token tokens)
         throws IOException {
         response.setContentType("text/html;charset=UTF-8");
-//        response.addHeader(AUTHORIZATION, "Bearer " + token.getAccessToken());
+//        response.addHeader(AUTHORIZATION, "Bearer " + tokens.getAccessToken());
         response.setContentType("application/json;charset=UTF-8");
 
-        // refresh token 은 cookie 로 전달한다.
-        Cookie cookie = new Cookie("refreshToken",token.getRefreshToken());
+        // refresh tokens 은 cookie 로 전달한다.
+        Cookie cookie = new Cookie("refreshToken",tokens.getRefreshToken());
 
         cookie.setSecure(true);
         cookie.setHttpOnly(true);
@@ -276,7 +276,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
         response.addCookie(cookie);
 
         PrintWriter writer = response.getWriter();
-        writer.println(objectMapper.writeValueAsString(token.getAccessToken()));
+        writer.println(objectMapper.writeValueAsString(tokens.getAccessToken()));
         writer.flush();
     }
 }
@@ -294,13 +294,13 @@ public class JwtAuthenticationFilter extends GenericFilterBean {
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
         throws IOException, ServletException, ServletException {
         Optional<String> tokenHeader = Optional.ofNullable(((HttpServletRequest)request).getHeader(AUTHORIZATION));
-        String token = tokenHeader.isPresent() ? tokenService.changeToToken(tokenHeader.get()) : null;
+        String tokens = tokenHeader.isPresent() ? tokenService.changeToToken(tokenHeader.get()) : null;
 
         // 토큰이 있는지, 유효한지 검증
-        if (token != null && tokenService.verifyToken(token)) {
+        if (tokens != null && tokenService.verifyToken(tokens)) {
             // 토큰에서 username 과 role 를 가져온다.
-            String username = tokenService.getUid(token);
-            String[] roles = tokenService.getRole(token);
+            String username = tokenService.getUid(tokens);
+            String[] roles = tokenService.getRole(tokens);
 
             Collection<SimpleGrantedAuthority> authorities = new ArrayList<>();
             Arrays.stream(roles).forEach(role -> {
@@ -320,7 +320,7 @@ public class JwtAuthenticationFilter extends GenericFilterBean {
 ## 8. SecurityConfig 설정에 필터와 핸들러를 추가한다.
 - oauth2 로그인 성공지 OAuth2SuccessHandler 를 호출한다.
 - UsernamePasswordAuthenticationFilter필터 앞에 만든 JwtAuthFilter를 등록한다.
-- 토큰이 만료되어 인증을 하지 못하면 /token/expired로 리다이렉트하여 Refresh요청을 해야한다는 것을 알려주고 Refresh를 할 수 있도록 /token/** 을 전체 허용한다.
+- 토큰이 만료되어 인증을 하지 못하면 /tokens/expired로 리다이렉트하여 Refresh요청을 해야한다는 것을 알려주고 Refresh를 할 수 있도록 /tokens/** 을 전체 허용한다.
 ```java
 @Configuration
 @EnableWebSecurity
@@ -338,10 +338,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
         // 순서 1
         // 로그인은 누구나 접근 가능하게 + 토큰 갱신
-        http.authorizeRequests().antMatchers("/token/**","/login/**").permitAll();
+        http.authorizeRequests().antMatchers("/tokens/**","/login/**").permitAll();
 
         // 순서 2
-        http.authorizeRequests().antMatchers(GET, "/api/user/**").hasAnyAuthority(ROLE_USER.stringValue);
+        http.authorizeRequests().antMatchers(GET, "/api/member/**").hasAnyAuthority(ROLE_USER.stringValue);
 
         // 순서 3
         http.authorizeRequests().anyRequest().authenticated(); // 인증 필요
@@ -357,7 +357,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 ```java
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/token")
+@RequestMapping("/tokens")
 public class TokenController {
     private final TokenService tokenService;
 
@@ -367,10 +367,10 @@ public class TokenController {
 
         if (refreshToken != null && tokenService.verifyToken(refreshToken)) {
             String email = tokenService.getUid(refreshToken);
-            Token newToken = tokenService.generateToken(email, ROLE_USER.stringValue);
+            Token newTokens = tokenService.generateToken(email, ROLE_USER.stringValue);
 
-            response.addHeader(AUTHORIZATION, newToken.getAccessToken());
-            response.addHeader("Refresh", newToken.getRefreshToken());
+            response.addHeader(AUTHORIZATION, newTokens.getAccessToken());
+            response.addHeader("Refresh", newTokens.getRefreshToken());
             response.setContentType("application/json;charset=UTF-8");
 
             return "HAPPY NEW TOKEN";
@@ -384,7 +384,7 @@ public class TokenController {
 # 2. Refactoring
 ## 1. jjwt depreciated
 - 일부 depreciated 된 로직이 존재한다.
-- 코드 수정시 token 에서 verify 오류가 발생하여 수정하지 않고 있다.
+- 코드 수정시 tokens 에서 verify 오류가 발생하여 수정하지 않고 있다.
 - 추후 수정예정
 
 ## 2. submodule 을 통한 보안정보 격리

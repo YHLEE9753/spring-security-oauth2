@@ -1,4 +1,4 @@
-package com.practice.userservice.global;
+package com.practice.userservice.global.token;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -10,6 +10,8 @@ import org.springframework.stereotype.Component;
 @Getter
 @Setter
 public class JwtYamlRead {
+    private String header;
+    private String issuer;
     private String tokenSecret;
     private long tokenExpiry;
     private long refreshTokenExpiry;

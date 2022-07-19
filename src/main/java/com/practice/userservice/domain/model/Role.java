@@ -1,4 +1,4 @@
-package com.practice.userservice.domain;
+package com.practice.userservice.domain.model;
 
 public enum Role {
     ROLE_USER("ROLE_USER"),

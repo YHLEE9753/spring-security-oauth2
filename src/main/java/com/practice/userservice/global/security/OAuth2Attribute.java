@@ -1,4 +1,4 @@
-package com.practice.userservice.service;
+package com.practice.userservice.global.security;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -17,7 +17,7 @@ public class OAuth2Attribute {
     private String name;
     private String picture;
 
-    static OAuth2Attribute of(String provider, String attributeKey,
+    public static OAuth2Attribute of(String provider, String attributeKey,
                 Map<String, Object> attributes) {
                 switch (provider) {
                     case "google":

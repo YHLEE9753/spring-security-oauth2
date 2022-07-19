@@ -1,9 +1,12 @@
-package com.practice.userservice.service;
+package com.practice.userservice.domain.service;
 
-import static com.practice.userservice.domain.Role.ROLE_USER;
+import static com.practice.userservice.domain.model.Role.ROLE_USER;
 
-import com.practice.userservice.domain.User;
-import com.practice.userservice.repository.UserRepo;
+import com.practice.userservice.domain.model.Member;
+import com.practice.userservice.domain.model.RefreshToken;
+import com.practice.userservice.domain.repository.MemberRepo;
+import com.practice.userservice.domain.repository.RefreshTokenRedisRepo;
+import com.practice.userservice.global.security.OAuth2Attribute;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -27,7 +30,8 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequest, OAuth2User>,
     UserService {
-    private final UserRepo userRepo;
+    private final MemberRepo memberRepo;
+    private final RefreshTokenRedisRepo refreshTokenRedisRepo;
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
@@ -54,22 +58,28 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 
     @Override
     @Transactional
-    public User saveUser(User user) {
-        log.info("Saving new user {} to the database", user.getName());
-        return userRepo.save(user);
+    public Member saveUser(Member member) {
+        log.info("Saving new user {} to the database", member.getName());
+        return memberRepo.save(member);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Optional<User> getUser(String username) {
-        log.info("Fetching user {}", username);
-        return userRepo.findByUsername(username);
+    public Optional<Member> getUser(String email) {
+        log.info("Fetching user {}", email);
+        return memberRepo.findByEmail(email);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<User> getUsers() {
+    public List<Member> getUsers() {
         log.info("Fetching all users");
-        return userRepo.findAll();
+        return memberRepo.findAll();
+    }
+
+    @Override
+    public void logout(String accessToken){
+        RefreshToken refreshToken = refreshTokenRedisRepo.findById(accessToken).get();
+        refreshTokenRedisRepo.delete(refreshToken);
     }
 }

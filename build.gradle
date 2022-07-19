@@ -1,5 +1,5 @@
 plugins {
-	id 'org.springframework.boot' version '2.6.9'
+	id 'org.springframework.boot' version '2.7.1'
 	id 'io.spring.dependency-management' version '1.0.11.RELEASE'
 	id 'java'
 }
@@ -24,6 +24,8 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
 	implementation 'javax.xml.bind:jaxb-api'
 	implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
 	implementation 'jakarta.xml.bind:jakarta.xml.bind-api:4.0.0'
@@ -31,9 +33,12 @@ dependencies {
 
 	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
 	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
+	runtimeOnly 'mysql:mysql-connector-java'
+	runtimeOnly 'com.h2database:h2'
+
 	compileOnly 'org.projectlombok:lombok'
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
-	runtimeOnly 'mysql:mysql-connector-java'
+
 	annotationProcessor 'org.projectlombok:lombok'
 	annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 
@@ -43,4 +48,11 @@ dependencies {
 
 tasks.named('test') {
 	useJUnitPlatform()
+}
+task copyPrivate(type: Copy) {
+	copy {
+		from './spring-security-oauth2-config'
+		include "*.yml"
+		into 'src/main/resources/'
+	}
 }

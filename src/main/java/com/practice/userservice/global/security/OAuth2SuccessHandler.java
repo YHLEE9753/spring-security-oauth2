@@ -1,15 +1,20 @@
-package com.practice.userservice.global.security.handler;
+package com.practice.userservice.global.security;
 
-import static com.practice.userservice.domain.Role.*;
+import static com.practice.userservice.domain.model.Role.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.practice.userservice.domain.User;
-import com.practice.userservice.global.token.Token;
+import com.practice.userservice.domain.model.Member;
+import com.practice.userservice.domain.model.RefreshToken;
+import com.practice.userservice.domain.repository.RefreshTokenRedisRepo;
+import com.practice.userservice.global.token.TokenGenerator;
+import com.practice.userservice.global.token.Tokens;
 import com.practice.userservice.global.token.TokenService;
-import com.practice.userservice.service.UserService;
+import com.practice.userservice.domain.service.UserService;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Date;
 import java.util.Map;
+import java.util.Optional;
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -18,6 +23,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.security.web.DefaultRedirectStrategy;
+import org.springframework.security.web.RedirectStrategy;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 
@@ -25,10 +32,13 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 @Component
 public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
-
+    private final TokenGenerator tokenGenerator;
     private final TokenService tokenService;
     private final ObjectMapper objectMapper;
     private final UserService userService;
+    private final RefreshTokenRedisRepo refreshTokenRedisRepo;
+
+    private RedirectStrategy redirectStratgy = new DefaultRedirectStrategy();
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
@@ -44,37 +54,34 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
         // 최초 로그인이라면 회원가입 처리를 한다.(User 로 회원가입)
         userService.getUser(email)
             .orElseGet(() -> userService.saveUser(
-                User.builder()
-                    .username(email)
+                Member.builder()
+                    .email(email)
                     .name(name)
                     .picture(picture)
                     .role(ROLE_USER)
                     .build()
             ));
 
-        // 토큰 생성
-        Token token = tokenService.generateToken(email, ROLE_USER.stringValue);
+        // access token 과 refresh token 을 생성
+        Tokens tokens = tokenGenerator.generateTokens(email, ROLE_USER.stringValue);
 
-        writeTokenResponse(response, token);
-    }
+        // refresh token 은 redis 에 저장
+        Date now = new Date();
+        RefreshToken refreshToken = new RefreshToken(
+            tokens.getAccessToken(),
+            tokens.getRefreshToken(),
+            now,
+            new Date(now.getTime() + 7776000000L)
+        );
+        refreshTokenRedisRepo.save(refreshToken);
 
-    private void writeTokenResponse(HttpServletResponse response, Token token)
-        throws IOException {
-        response.setContentType("text/html;charset=UTF-8");
-//        response.addHeader(AUTHORIZATION, "Bearer " + token.getAccessToken());
-        response.setContentType("application/json;charset=UTF-8");
-
-        Cookie cookie = new Cookie("refreshToken",token.getRefreshToken());
-
-        cookie.setSecure(true);
-        cookie.setHttpOnly(true);
-        cookie.setPath("/");
-        cookie.setMaxAge((int) tokenService.getRefreshPeriod());
-
+        // access token 은 cookie 로 전달,
+        Cookie cookie = new Cookie("accessToken", tokens.getAccessToken());
+        cookie.setDomain("localhost");
+        cookie.setPath("/main");
+        cookie.setMaxAge((int) tokenService.getAccessTokenPeriod());
         response.addCookie(cookie);
-
-        PrintWriter writer = response.getWriter();
-        writer.println(objectMapper.writeValueAsString(token.getAccessToken()));
-        writer.flush();
+        String targetUrl = "http://localhost:3000/main";
+        redirectStratgy.sendRedirect(request, response, targetUrl);
     }
 }
