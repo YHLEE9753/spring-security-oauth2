@@ -1,26 +1,27 @@
 package com.practice.userservice.global.security;
 
 import static com.practice.userservice.domain.model.Role.*;
+import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.practice.userservice.domain.model.Member;
 import com.practice.userservice.domain.model.RefreshToken;
 import com.practice.userservice.domain.repository.RefreshTokenRedisRepo;
+import com.practice.userservice.domain.service.MemberService;
 import com.practice.userservice.global.token.TokenGenerator;
+import com.practice.userservice.global.token.TokenType;
 import com.practice.userservice.global.token.Tokens;
 import com.practice.userservice.global.token.TokenService;
-import com.practice.userservice.domain.service.UserService;
+
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.Date;
 import java.util.Map;
-import java.util.Optional;
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.DefaultRedirectStrategy;
@@ -32,18 +33,28 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 @Component
 public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
+
     private final TokenGenerator tokenGenerator;
     private final TokenService tokenService;
-    private final ObjectMapper objectMapper;
-    private final UserService userService;
+    private final MemberService memberService;
     private final RefreshTokenRedisRepo refreshTokenRedisRepo;
-
     private RedirectStrategy redirectStratgy = new DefaultRedirectStrategy();
+
+    @Value("${app.oauth.domain}")
+    private String domain;
+
+    @Value("${app.oauth.sign-up-path}")
+    private String signUpPath;
+
+    @Value("${app.oauth.login-path}")
+    private String loginPath;
+
+    @Value("${app.oauth.sign-up-time}")
+    private int signUpTime;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
-        Authentication authentication)
-        throws IOException, ServletException {
+        Authentication authentication) throws IOException, ServletException {
         // 인증 된 principal 를 가지고 온다.
         OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
         Map<String, Object> attributes = oAuth2User.getAttributes();
@@ -51,37 +62,56 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
         String name = (String) attributes.get("name");
         String picture = (String) attributes.get("picture");
 
-        // 최초 로그인이라면 회원가입 처리를 한다.(User 로 회원가입)
-        userService.getUser(email)
-            .orElseGet(() -> userService.saveUser(
-                Member.builder()
-                    .email(email)
-                    .name(name)
-                    .picture(picture)
-                    .role(ROLE_USER)
-                    .build()
-            ));
+        // 최초 로그인이라면 추가 회원가입 처리를 한다.
+        if (!memberService.getUser(email).isPresent()) {
 
-        // access token 과 refresh token 을 생성
-        Tokens tokens = tokenGenerator.generateTokens(email, ROLE_USER.stringValue);
+            // refresh tokens 은 cookie 로 전달한다.
+            customCookie(response, "email", email, signUpTime);
+            customCookie(response, "name", name, signUpTime);
+            customCookie(response, "picture", picture, signUpTime);
 
-        // refresh token 은 redis 에 저장
+            redirectStratgy.sendRedirect(request, response, domain+signUpPath);
+        }else{
+            // 이미 회원가입 한 유저의 경우 토큰을 refreshToken 저장 후 accessToken 쿠키 전달
+            Tokens tokens = tokenGenerator.generateTokens(email, ROLE_USER.stringValue);
+            saveRefreshTokenToRedis(tokens);
+
+            // cookie 로 전달
+            addAccessTokenToCookie(response, tokens.getAccessToken(), TokenType.JWT_TYPE);
+            redirectStratgy.sendRedirect(request, response, domain+loginPath);
+        }
+    }
+
+    private void saveRefreshTokenToRedis(Tokens tokens) {
         Date now = new Date();
         RefreshToken refreshToken = new RefreshToken(
             tokens.getAccessToken(),
             tokens.getRefreshToken(),
             now,
-            new Date(now.getTime() + 7776000000L)
+            new Date(now.getTime() + tokenService.getRefreshPeriod())
         );
         refreshTokenRedisRepo.save(refreshToken);
+    }
 
-        // access token 은 cookie 로 전달,
-        Cookie cookie = new Cookie("accessToken", tokens.getAccessToken());
-        cookie.setDomain("localhost");
-        cookie.setPath("/main");
+
+    private void addAccessTokenToCookie(HttpServletResponse response, String accessToken,
+        TokenType tokenType) throws IOException {
+        Cookie cookie = new Cookie(AUTHORIZATION,
+            tokenService.tokenWithType(accessToken, tokenType));
+        cookie.setSecure(true);
+        cookie.setHttpOnly(true);
         cookie.setMaxAge((int) tokenService.getAccessTokenPeriod());
+        cookie.setPath(loginPath);
+
         response.addCookie(cookie);
-        String targetUrl = "http://localhost:3000/main";
-        redirectStratgy.sendRedirect(request, response, targetUrl);
+    }
+
+    private void customCookie(HttpServletResponse response, String key, String value, int time)
+        throws IOException {
+        Cookie cookie = new Cookie(key, value);
+        cookie.setMaxAge(time);
+        cookie.setPath(signUpPath);
+
+        response.addCookie(cookie);
     }
 }

@@ -2,15 +2,9 @@ package com.practice.userservice.domain.service;
 
 import static com.practice.userservice.domain.model.Role.ROLE_USER;
 
-import com.practice.userservice.domain.model.Member;
-import com.practice.userservice.domain.model.RefreshToken;
-import com.practice.userservice.domain.repository.MemberRepo;
-import com.practice.userservice.domain.repository.RefreshTokenRedisRepo;
 import com.practice.userservice.global.security.OAuth2Attribute;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Primary;
@@ -22,17 +16,12 @@ import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
 @Primary
 @RequiredArgsConstructor
-public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequest, OAuth2User>,
-    UserService {
-    private final MemberRepo memberRepo;
-    private final RefreshTokenRedisRepo refreshTokenRedisRepo;
-
+public class CustomOAuth2MemberService implements OAuth2UserService<OAuth2UserRequest, OAuth2User>{
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
         DefaultOAuth2UserService oAuth2UserService = new DefaultOAuth2UserService();
@@ -56,30 +45,4 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
         );
     }
 
-    @Override
-    @Transactional
-    public Member saveUser(Member member) {
-        log.info("Saving new user {} to the database", member.getName());
-        return memberRepo.save(member);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public Optional<Member> getUser(String email) {
-        log.info("Fetching user {}", email);
-        return memberRepo.findByEmail(email);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<Member> getUsers() {
-        log.info("Fetching all users");
-        return memberRepo.findAll();
-    }
-
-    @Override
-    public void logout(String accessToken){
-        RefreshToken refreshToken = refreshTokenRedisRepo.findById(accessToken).get();
-        refreshTokenRedisRepo.delete(refreshToken);
-    }
 }

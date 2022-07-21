@@ -5,22 +5,20 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import java.util.Base64;
 import java.util.Date;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
-@Service
+@Component
 public class TokenGenerator {
-    private final String header;
     private final String issuer;
     private String secretKey;
     private final long tokenPeriod;
     private final long refreshPeriod;
 
-    public TokenGenerator(JwtYamlRead jwtYamlRead) {
-        this.header = jwtYamlRead.getHeader();
-        this.issuer = jwtYamlRead.getIssuer();
-        this.secretKey = jwtYamlRead.getTokenSecret();
-        this.tokenPeriod = jwtYamlRead.getTokenExpiry();
-        this.refreshPeriod = jwtYamlRead.getRefreshTokenExpiry();
+    public TokenGenerator(JwtProperties jwtProperties) {
+        this.issuer = jwtProperties.getIssuer();
+        this.secretKey = jwtProperties.getTokenSecret();
+        this.tokenPeriod = jwtProperties.getTokenExpiry();
+        this.refreshPeriod = jwtProperties.getRefreshTokenExpiry();
         secretKey = Base64.getEncoder().encodeToString(secretKey.getBytes());
     }
 
