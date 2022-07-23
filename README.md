@@ -1,7 +1,10 @@
-# Spring security OAuth2 + JWT
-### Table
-1. OAuth2 + JWT 구현
-2. Refactoring
+# Spring security OAuth2 + JWT + redis
+- Spring security OAuth2 를 이용하여 회원가입, 로그인, 로그아웃, 인증, 인가 구현
+- Accesstoken Refrestoken 을 이용한 JWT 활용
+- redis 를 이용한 로그아웃 구현
+- redis 를 이용한 OAuth2 이후 추가 로그인 정보 기입후 회원가입 구현
+- redis 와 blackList 기법을 적용한 logout 구현
+
 ---
 # 1. OAuth2 + JWT 구현
 ## 1. init: project setting
