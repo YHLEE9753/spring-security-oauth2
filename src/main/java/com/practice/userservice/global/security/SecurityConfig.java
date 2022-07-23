@@ -1,8 +1,8 @@
 package com.practice.userservice.global.security;
 
-import com.practice.userservice.domain.repository.BlackListTokenRedisRepo;
-import com.practice.userservice.domain.repository.RefreshTokenRedisRepo;
-import com.practice.userservice.domain.service.CustomOAuth2MemberService;
+import com.practice.userservice.domain.cache.repository.BlackListTokenRedisRepo;
+import com.practice.userservice.domain.cache.repository.RefreshTokenRedisRepo;
+import com.practice.userservice.domain.member.service.CustomOAuth2MemberService;
 import com.practice.userservice.global.token.TokenGenerator;
 import com.practice.userservice.global.token.TokenService;
 import javax.servlet.http.HttpServletResponse;

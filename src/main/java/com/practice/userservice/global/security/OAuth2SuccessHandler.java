@@ -1,21 +1,20 @@
 package com.practice.userservice.global.security;
 
-import static com.practice.userservice.domain.model.Role.*;
+import static com.practice.userservice.domain.member.model.Role.*;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
-import com.practice.userservice.domain.model.Email;
-import com.practice.userservice.domain.model.cache.RefreshToken;
-import com.practice.userservice.domain.model.cache.SignupKey;
-import com.practice.userservice.domain.repository.RefreshTokenRedisRepo;
-import com.practice.userservice.domain.repository.SignupKeyRedisRepo;
-import com.practice.userservice.domain.service.MemberService;
+import com.practice.userservice.domain.member.model.Email;
+import com.practice.userservice.domain.cache.model.RefreshToken;
+import com.practice.userservice.domain.cache.model.SignupKey;
+import com.practice.userservice.domain.cache.repository.RefreshTokenRedisRepo;
+import com.practice.userservice.domain.cache.repository.SignupKeyRedisRepo;
+import com.practice.userservice.domain.member.service.MemberService;
 import com.practice.userservice.global.token.TokenGenerator;
 import com.practice.userservice.global.token.TokenType;
 import com.practice.userservice.global.token.Tokens;
 import com.practice.userservice.global.token.TokenService;
 
 import java.io.IOException;
-import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;

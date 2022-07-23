@@ -2,10 +2,10 @@ package com.practice.userservice.global.security;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
-import com.practice.userservice.domain.model.cache.BlackListToken;
-import com.practice.userservice.domain.model.cache.RefreshToken;
-import com.practice.userservice.domain.repository.BlackListTokenRedisRepo;
-import com.practice.userservice.domain.repository.RefreshTokenRedisRepo;
+import com.practice.userservice.domain.cache.model.BlackListToken;
+import com.practice.userservice.domain.cache.model.RefreshToken;
+import com.practice.userservice.domain.cache.repository.BlackListTokenRedisRepo;
+import com.practice.userservice.domain.cache.repository.RefreshTokenRedisRepo;
 import com.practice.userservice.global.token.TokenGenerator;
 import com.practice.userservice.global.token.TokenService;
 import com.practice.userservice.global.token.TokenType;

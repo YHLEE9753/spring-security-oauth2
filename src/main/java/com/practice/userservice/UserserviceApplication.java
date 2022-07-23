@@ -1,15 +1,10 @@
 package com.practice.userservice;
 
-import com.practice.userservice.domain.model.Member;
-import com.practice.userservice.domain.model.cache.RefreshToken;
-import com.practice.userservice.domain.model.Role;
-import com.practice.userservice.domain.repository.BlackListTokenRedisRepo;
-import com.practice.userservice.domain.repository.RefreshTokenRedisRepo;
-import com.practice.userservice.domain.service.MemberService;
+import com.practice.userservice.domain.cache.repository.BlackListTokenRedisRepo;
+import com.practice.userservice.domain.cache.repository.RefreshTokenRedisRepo;
+import com.practice.userservice.domain.member.service.MemberService;
 import com.practice.userservice.global.token.TokenGenerator;
 import com.practice.userservice.global.token.TokenService;
-import com.practice.userservice.global.token.Tokens;
-import java.util.Date;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
