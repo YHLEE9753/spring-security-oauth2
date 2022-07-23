@@ -3,8 +3,11 @@ package com.practice.userservice.global.security;
 import static com.practice.userservice.domain.model.Role.*;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
-import com.practice.userservice.domain.model.RefreshToken;
+import com.practice.userservice.domain.model.Email;
+import com.practice.userservice.domain.model.cache.RefreshToken;
+import com.practice.userservice.domain.model.cache.SignupKey;
 import com.practice.userservice.domain.repository.RefreshTokenRedisRepo;
+import com.practice.userservice.domain.repository.SignupKeyRedisRepo;
 import com.practice.userservice.domain.service.MemberService;
 import com.practice.userservice.global.token.TokenGenerator;
 import com.practice.userservice.global.token.TokenType;
@@ -12,6 +15,9 @@ import com.practice.userservice.global.token.Tokens;
 import com.practice.userservice.global.token.TokenService;
 
 import java.io.IOException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.Map;
 import javax.servlet.ServletException;
@@ -38,6 +44,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
     private final TokenService tokenService;
     private final MemberService memberService;
     private final RefreshTokenRedisRepo refreshTokenRedisRepo;
+    private final SignupKeyRedisRepo signupKeyRedisRepo;
     private RedirectStrategy redirectStratgy = new DefaultRedirectStrategy();
 
     @Value("${app.oauth.domain}")
@@ -63,12 +70,15 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
         String picture = (String) attributes.get("picture");
 
         // 최초 로그인이라면 추가 회원가입 처리를 한다.
-        if (!memberService.getUser(email).isPresent()) {
+        if (!memberService.getUser(new Email(email)).isPresent()) {
+            SignupKey signupKey = new SignupKey(email, name, picture, 500000L);
+            signupKeyRedisRepo.save(signupKey);
 
-            // refresh tokens 은 cookie 로 전달한다.
-            customCookie(response, "email", email, signUpTime);
-            customCookie(response, "name", name, signUpTime);
-            customCookie(response, "picture", picture, signUpTime);
+            System.out.println("추가 로그인 추가");
+            System.out.println(URLEncoder.encode(email, StandardCharsets.UTF_8));
+
+            // email 을 쿠키로 전달
+            customCookie(response, AUTHORIZATION, URLEncoder.encode(email, StandardCharsets.UTF_8), signUpTime);
 
             redirectStratgy.sendRedirect(request, response, domain+signUpPath);
         }else{
@@ -96,8 +106,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
     private void addAccessTokenToCookie(HttpServletResponse response, String accessToken,
         TokenType tokenType) throws IOException {
-        Cookie cookie = new Cookie(AUTHORIZATION,
-            tokenService.tokenWithType(accessToken, tokenType));
+        Cookie cookie = new Cookie(AUTHORIZATION, URLEncoder.encode(tokenService.tokenWithType(accessToken, tokenType),StandardCharsets.UTF_8));
         cookie.setSecure(true);
         cookie.setHttpOnly(true);
         cookie.setMaxAge((int) tokenService.getAccessTokenPeriod());

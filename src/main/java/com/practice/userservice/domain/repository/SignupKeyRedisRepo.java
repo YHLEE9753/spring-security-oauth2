@@ -1,8 +1,9 @@
 package com.practice.userservice.domain.repository;
 
 import com.practice.userservice.domain.model.cache.RefreshToken;
+import com.practice.userservice.domain.model.cache.SignupKey;
 import org.springframework.data.repository.CrudRepository;
 
-public interface RefreshTokenRedisRepo extends CrudRepository<RefreshToken, String> {
+public interface SignupKeyRedisRepo extends CrudRepository<SignupKey, String> {
 
 }

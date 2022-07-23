@@ -1,7 +1,7 @@
 package com.practice.userservice.domain.controller;
 
-import com.practice.userservice.domain.model.BlackListToken;
-import com.practice.userservice.domain.model.RefreshToken;
+import com.practice.userservice.domain.model.cache.BlackListToken;
+import com.practice.userservice.domain.model.cache.RefreshToken;
 import com.practice.userservice.domain.repository.BlackListTokenRedisRepo;
 import com.practice.userservice.domain.repository.RefreshTokenRedisRepo;
 import java.util.ArrayList;

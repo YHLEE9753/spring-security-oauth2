@@ -1,9 +1,13 @@
 package com.practice.userservice.domain.service;
 
+import com.practice.userservice.domain.controller.dto.MemberResponse;
+import com.practice.userservice.domain.controller.dto.MemberSaveRequest;
+import com.practice.userservice.domain.model.Email;
 import com.practice.userservice.domain.model.Member;
-import com.practice.userservice.domain.model.RefreshToken;
+import com.practice.userservice.domain.model.Role;
+import com.practice.userservice.domain.model.cache.SignupKey;
 import com.practice.userservice.domain.repository.MemberRepo;
-import com.practice.userservice.global.token.TokenService;
+import com.practice.userservice.domain.service.dto.MemberDto;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -17,14 +21,8 @@ import org.springframework.transaction.annotation.Transactional;
 public class MemberService {
     private final MemberRepo memberRepo;
 
-    @Transactional
-    public Member saveUser(Member member) {
-        log.info("Saving new user {} to the database", member.getName());
-        return memberRepo.save(member);
-    }
-
     @Transactional(readOnly = true)
-    public Optional<Member> getUser(String email) {
+    public Optional<Member> getUser(Email email) {
         log.info("Fetching user {}", email);
         return memberRepo.findByEmail(email);
     }
@@ -33,5 +31,27 @@ public class MemberService {
     public List<Member> getUsers() {
         log.info("Fetching all users");
         return memberRepo.findAll();
+    }
+
+    @Transactional
+    public MemberResponse signup(MemberSaveRequest memberSaveRequest, SignupKey signupKey) {
+        Member member = Member.builder()
+            .nickname(signupKey.getNickname())
+            .email(signupKey.getEmail())
+            .career(memberSaveRequest.career())
+            .profileImageUrl(signupKey.getProfileImageUrl())
+            .githubUrl(memberSaveRequest.githubUrl())
+            .blogUrl(memberSaveRequest.blogUrl())
+            .role(Role.ROLE_USER)
+            .build();
+
+        log.info("Saving new user {} to the database", member.getNickname());
+        Member savedMember = memberRepo.save(member);
+
+        return MemberResponse.builder()
+            .memberId(savedMember.getMemberId())
+            .email(signupKey.getEmail())
+            .build();
+
     }
 }

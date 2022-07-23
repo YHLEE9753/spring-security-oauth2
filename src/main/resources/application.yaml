@@ -75,7 +75,7 @@ app:
     header: token
     issuer: prgrms
     tokenSecret: ENC(ue4i7O795mbBVZEgETESWrl9m5L/Mw+rhsYEejK1MfyGb3Hkatdfpnb2vTLy+bYC)
-    tokenExpiry: 30000
+    tokenExpiry: 300000
     refreshTokenExpiry: 7776000000
   oauth:
     domain: "http://localhost:3000"

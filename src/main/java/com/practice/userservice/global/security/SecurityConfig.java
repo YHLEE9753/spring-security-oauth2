@@ -60,7 +60,7 @@ public class SecurityConfig {
             )
             .authorizeRequests(
                 authorizeRequests -> authorizeRequests
-                    .antMatchers("/token/**", "/login/**", "/signup/**","/api/user/**","/redis/**")
+                    .antMatchers("/token/**", "/login/**", "/api/signup/**","/api/user/**","/redis/**")
                     .permitAll()
 
 //                    .antMatchers(GET, "/api/user/**")

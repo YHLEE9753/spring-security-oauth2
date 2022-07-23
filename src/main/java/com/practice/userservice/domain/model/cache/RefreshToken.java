@@ -1,4 +1,4 @@
-package com.practice.userservice.domain.model;
+package com.practice.userservice.domain.model.cache;
 
 import java.util.Date;
 import lombok.Getter;

@@ -2,8 +2,8 @@ package com.practice.userservice.global.security;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
-import com.practice.userservice.domain.model.BlackListToken;
-import com.practice.userservice.domain.model.RefreshToken;
+import com.practice.userservice.domain.model.cache.BlackListToken;
+import com.practice.userservice.domain.model.cache.RefreshToken;
 import com.practice.userservice.domain.repository.BlackListTokenRedisRepo;
 import com.practice.userservice.domain.repository.RefreshTokenRedisRepo;
 import com.practice.userservice.global.token.TokenGenerator;
@@ -85,7 +85,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             tokenService.tokenWithType(token, TokenType.JWT_BLACKLIST));
         if(blackListToken.isPresent()){
             log.error("logout error - attack detected");
-//            throw new IllegalArgumentException("logout error");
+            throw new IllegalArgumentException("logout error"); // login 으로 전달
         }
     }
 
