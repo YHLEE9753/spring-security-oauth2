@@ -1,7 +1,10 @@
 package com.practice.userservice.domain.member.service.converter;
 
 import com.practice.userservice.domain.member.controller.dto.MemberResponse;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class MemberConverter {
 //
 //    public static Member toMember(MemberDto memberDto) {

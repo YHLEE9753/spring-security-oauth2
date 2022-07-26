@@ -11,6 +11,7 @@ import lombok.ToString;
 @Builder(access = AccessLevel.PRIVATE)
 @Getter
 public class OAuth2Attribute {
+
     private Map<String, Object> attributes;
     private String attributeKey;
     private String email;
@@ -18,14 +19,14 @@ public class OAuth2Attribute {
     private String picture;
 
     public static OAuth2Attribute of(String provider, String attributeKey,
-                Map<String, Object> attributes) {
-                switch (provider) {
-                    case "google":
-                        return ofGoogle(attributeKey, attributes);
-                    case "naver":
-                        return ofNaver("id", attributes);
-                    default:
-                        throw new RuntimeException();
+        Map<String, Object> attributes) {
+        switch (provider) {
+            case "google":
+                return ofGoogle(attributeKey, attributes);
+            case "naver":
+                return ofNaver("id", attributes);
+            default:
+                throw new RuntimeException();
         }
     }
 
@@ -34,7 +35,7 @@ public class OAuth2Attribute {
         return OAuth2Attribute.builder()
             .name((String) attributes.get("name"))
             .email((String) attributes.get("email"))
-            .picture((String)attributes.get("picture"))
+            .picture((String) attributes.get("picture"))
             .attributes(attributes)
             .attributeKey(attributeKey)
             .build();

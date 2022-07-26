@@ -7,11 +7,12 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
 class JwtPropertiesTest {
+
     @Autowired
     private JwtProperties jwtProperties;
 
     @Test
-    void yamlFileTest () {
+    void yamlFileTest() {
         // given
         // when
         // then

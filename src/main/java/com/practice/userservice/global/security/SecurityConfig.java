@@ -1,8 +1,7 @@
 package com.practice.userservice.global.security;
 
-import com.practice.userservice.domain.cache.repository.BlackListTokenRedisRepo;
-import com.practice.userservice.domain.cache.repository.RefreshTokenRedisRepo;
-import com.practice.userservice.domain.member.service.CustomOAuth2MemberService;
+import com.practice.userservice.global.cache.repository.RefreshTokenRedisRepo;
+import com.practice.userservice.global.cache.service.BlackListTokenRedisService;
 import com.practice.userservice.global.token.TokenGenerator;
 import com.practice.userservice.global.token.TokenService;
 import javax.servlet.http.HttpServletResponse;
@@ -28,7 +27,7 @@ public class SecurityConfig {
     private final TokenService tokenService;
     private final RefreshTokenRedisRepo refreshTokenRedisRepo;
     private final TokenGenerator tokenGenerator;
-    private final BlackListTokenRedisRepo blackListTokenRedisRepo;
+    private final BlackListTokenRedisService blackListTokenRedisService;
 
     @Bean
     public AuthenticationEntryPoint authenticationEntryPoint() {
@@ -49,7 +48,7 @@ public class SecurityConfig {
     @Bean
     protected SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-//            .formLogin(AbstractHttpConfigurer::disable)
+            .formLogin(AbstractHttpConfigurer::disable)
             .logout(AbstractHttpConfigurer::disable)
             .rememberMe(AbstractHttpConfigurer::disable)
             .httpBasic(AbstractHttpConfigurer::disable)
@@ -60,7 +59,7 @@ public class SecurityConfig {
             )
             .authorizeRequests(
                 authorizeRequests -> authorizeRequests
-                    .antMatchers("/token/**", "/login/**", "/api/signup/**","/api/user/**","/redis/**")
+                    .antMatchers("/**") // 개발 서버용
                     .permitAll()
 
 //                    .antMatchers(GET, "/api/user/**")
@@ -81,7 +80,8 @@ public class SecurityConfig {
 //                }
 //            )
             .addFilterBefore(
-                new JwtAuthenticationFilter(tokenService, tokenGenerator, refreshTokenRedisRepo, blackListTokenRedisRepo),
+                new JwtAuthenticationFilter(tokenService, tokenGenerator, refreshTokenRedisRepo,
+                    blackListTokenRedisService),
                 UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

@@ -4,21 +4,24 @@ import static com.practice.userservice.domain.member.model.Role.*;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
 import com.practice.userservice.domain.member.model.Email;
-import com.practice.userservice.domain.cache.model.RefreshToken;
-import com.practice.userservice.domain.cache.model.SignupKey;
-import com.practice.userservice.domain.cache.repository.RefreshTokenRedisRepo;
-import com.practice.userservice.domain.cache.repository.SignupKeyRedisRepo;
+import com.practice.userservice.global.cache.model.RefreshToken;
+import com.practice.userservice.global.cache.model.TemporaryMember;
+import com.practice.userservice.global.cache.repository.RefreshTokenRedisRepo;
+import com.practice.userservice.domain.member.model.Member;
 import com.practice.userservice.domain.member.service.MemberService;
+import com.practice.userservice.global.cache.repository.TemporaryMemberRedisRepo;
 import com.practice.userservice.global.token.TokenGenerator;
 import com.practice.userservice.global.token.TokenType;
 import com.practice.userservice.global.token.Tokens;
 import com.practice.userservice.global.token.TokenService;
 
+import com.practice.userservice.global.util.CoderUtil;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.Map;
+import java.util.Optional;
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -43,20 +46,20 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
     private final TokenService tokenService;
     private final MemberService memberService;
     private final RefreshTokenRedisRepo refreshTokenRedisRepo;
-    private final SignupKeyRedisRepo signupKeyRedisRepo;
+    private final TemporaryMemberRedisRepo temporaryMemberRedisRepo;
     private RedirectStrategy redirectStratgy = new DefaultRedirectStrategy();
 
     @Value("${app.oauth.domain}")
     private String domain;
 
-    @Value("${app.oauth.sign-up-path}")
-    private String signUpPath;
+    @Value("${app.oauth.signupPath}")
+    private String signupPath;
 
-    @Value("${app.oauth.login-path}")
-    private String loginPath;
+    @Value("${app.oauth.loginSuccessPath}")
+    private String loginSuccessPath;
 
-    @Value("${app.oauth.sign-up-time}")
-    private int signUpTime;
+    @Value("${app.oauth.signupTime}")
+    private Long signupTime;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
@@ -69,25 +72,25 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
         String picture = (String) attributes.get("picture");
 
         // 최초 로그인이라면 추가 회원가입 처리를 한다.
-        if (!memberService.getUser(new Email(email)).isPresent()) {
-            SignupKey signupKey = new SignupKey(email, name, picture, 500000L);
-            signupKeyRedisRepo.save(signupKey);
+        Optional<Member> optionalMember = memberService.getUser(new Email(email));
+        if (!optionalMember.isPresent()) {
+            TemporaryMember temporaryMember = new TemporaryMember(email, name, picture, signupTime);
+            temporaryMemberRedisRepo.save(temporaryMember);
 
-            System.out.println("추가 로그인 추가");
-            System.out.println(URLEncoder.encode(email, StandardCharsets.UTF_8));
+            String temporaryMemberEmail = temporaryMember.getEmail();
 
-            // email 을 쿠키로 전달
-            customCookie(response, AUTHORIZATION, URLEncoder.encode(email, StandardCharsets.UTF_8), signUpTime);
-
-            redirectStratgy.sendRedirect(request, response, domain+signUpPath);
-        }else{
+            String param1 = "?email=" + CoderUtil.encode(temporaryMemberEmail);
+            String param2 = "&name=" + CoderUtil.encode(name);
+            String targetURI = domain + signupPath + param1 + param2;
+            redirectStratgy.sendRedirect(request, response, targetURI);
+        } else {
             // 이미 회원가입 한 유저의 경우 토큰을 refreshToken 저장 후 accessToken 쿠키 전달
             Tokens tokens = tokenGenerator.generateTokens(email, ROLE_USER.stringValue);
             saveRefreshTokenToRedis(tokens);
 
             // cookie 로 전달
             addAccessTokenToCookie(response, tokens.getAccessToken(), TokenType.JWT_TYPE);
-            redirectStratgy.sendRedirect(request, response, domain+loginPath);
+            redirectStratgy.sendRedirect(request, response, domain + loginSuccessPath);
         }
     }
 
@@ -104,21 +107,14 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
 
     private void addAccessTokenToCookie(HttpServletResponse response, String accessToken,
-        TokenType tokenType) throws IOException {
-        Cookie cookie = new Cookie(AUTHORIZATION, URLEncoder.encode(tokenService.tokenWithType(accessToken, tokenType),StandardCharsets.UTF_8));
+        TokenType tokenType) {
+        Cookie cookie = new Cookie(AUTHORIZATION,
+            URLEncoder.encode(tokenService.tokenWithType(accessToken, tokenType),
+                StandardCharsets.UTF_8));
         cookie.setSecure(true);
         cookie.setHttpOnly(true);
         cookie.setMaxAge((int) tokenService.getAccessTokenPeriod());
-        cookie.setPath(loginPath);
-
-        response.addCookie(cookie);
-    }
-
-    private void customCookie(HttpServletResponse response, String key, String value, int time)
-        throws IOException {
-        Cookie cookie = new Cookie(key, value);
-        cookie.setMaxAge(time);
-        cookie.setPath(signUpPath);
+        cookie.setPath(loginSuccessPath);
 
         response.addCookie(cookie);
     }

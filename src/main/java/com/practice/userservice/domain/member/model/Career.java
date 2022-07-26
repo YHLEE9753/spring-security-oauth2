@@ -13,7 +13,7 @@ public enum Career {
         this.careerValue = careerValue;
     }
 
-   public static Career toCareer(String value){
+    public static Career toCareer(String value) {
         return Career.valueOf(value);
     }
 }

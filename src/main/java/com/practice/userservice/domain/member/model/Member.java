@@ -13,14 +13,13 @@ import javax.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import javax.persistence.Table;
 
 
 @Entity
 @Getter
-@Table(name = "member")
 @NoArgsConstructor
 public class Member extends BaseTimeEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long memberId;

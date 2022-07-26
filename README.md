@@ -3,6 +3,24 @@
 1. OAuth2 + JWT 구현
 2. Refactoring
 ---
+# 시나리오
+## 최초로그인
+1. (프론트) 에서 a 태그를 통해 oauth 로그인 창으로 이동한다.
+```
+<a href="http://localhost:8080/oauth2/authorization/google">구글</a>
+<a href="http://localhost:8080/oauth2/authorization/naver">네이버</a>
+```
+2. OAuth 에서 데이터를 받은 후 서버로 데이터를 전송한다.
+3. OAuth2SuccessHandler 에서 db 에서 해당 데이터의 멤버가 있는지 조회한다
+4. 없으면 임시로 해당 유저에게 ROLE_NOTHING 권한을 부여한 후 멤버생성한다
+5. 생성된 멤버의 아이디와 닉네임을 쿼리파람으로 signup 창으로 redirect 한다.
+6. signup 에서 추가정보를 입력받은 후 signup post 로 입장한다
+7. 해당 id 가 존재하면 update 하면서 권한을 ROLE_USER 로 변경한다.
+   1. 이때 해당 id 가 존재하지 않으면 url 공격으로 간주한다.
+   2. 권한이 ROLE_NOTHING 이 아니면 
+8. 
+
+
 # 1. OAuth2 + JWT 구현
 ## 1. init: project setting
 java : 17<br>

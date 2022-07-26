@@ -1,15 +1,14 @@
 package com.practice.userservice.domain.member.controller.dto;
 
-
-import javax.validation.constraints.NotBlank;
 import lombok.Builder;
 
+@Builder
 public record MemberSaveRequest(
-    @NotBlank
+    String email,
+    String nickname,
+    String imageUrl,
     String career,
-
     String githubUrl,
-
     String blogUrl
 ) {
 

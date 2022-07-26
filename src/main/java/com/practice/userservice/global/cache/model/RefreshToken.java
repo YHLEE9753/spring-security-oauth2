@@ -1,4 +1,4 @@
-package com.practice.userservice.domain.cache.model;
+package com.practice.userservice.global.cache.model;
 
 import java.util.Date;
 import lombok.Getter;
@@ -9,8 +9,10 @@ import org.springframework.data.redis.core.TimeToLive;
 @Getter
 @RedisHash(value = "refreshToken")
 public class RefreshToken {
+
     @Id
     private String accessTokenValue;
+
     private String refreshTokenValue;
     private Date createdTime;
     private Date expirationTime;

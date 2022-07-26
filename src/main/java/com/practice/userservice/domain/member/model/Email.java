@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 @Embeddable
 @NoArgsConstructor(access = PROTECTED)
 public class Email {
+
     private static final String EMAIL_REGEX = "[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?";
     private String address;
 
@@ -24,7 +25,8 @@ public class Email {
     private void validateEmailPattern(String email) {
         boolean matches = Pattern.matches(EMAIL_REGEX, email);
         if (!matches) {
-            throw new IllegalArgumentException(format("입력값이 이메일 형식에 맞지 않습니다. inputEmail : {0}", email));
+            throw new IllegalArgumentException(
+                format("입력값이 이메일 형식에 맞지 않습니다. inputEmail : {0}", email));
         }
     }
 

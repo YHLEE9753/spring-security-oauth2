@@ -1,9 +1,9 @@
-package com.practice.userservice.domain.cache.controller;
+package com.practice.userservice.global.cache.controller;
 
-import com.practice.userservice.domain.cache.model.BlackListToken;
-import com.practice.userservice.domain.cache.model.RefreshToken;
-import com.practice.userservice.domain.cache.repository.BlackListTokenRedisRepo;
-import com.practice.userservice.domain.cache.repository.RefreshTokenRedisRepo;
+import com.practice.userservice.global.cache.model.BlackListToken;
+import com.practice.userservice.global.cache.model.RefreshToken;
+import com.practice.userservice.global.cache.repository.BlackListTokenRedisRepo;
+import com.practice.userservice.global.cache.repository.RefreshTokenRedisRepo;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -16,16 +16,17 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/redis")
 @RequiredArgsConstructor
 public class RedisController {
+
     private final BlackListTokenRedisRepo blackListTokenRedisRepo;
     private final RefreshTokenRedisRepo refreshTokenRedisRepo;
 
 
     @GetMapping("/refresh")
-    public List<List<String>> refresh(){
+    public List<List<String>> refresh() {
         List<List<String>> list = new ArrayList<>();
-        if(refreshTokenRedisRepo.count()!=0L){
+        if (refreshTokenRedisRepo.count() != 0L) {
             Iterator<RefreshToken> iterator = refreshTokenRedisRepo.findAll().iterator();
-            while(iterator.hasNext()){
+            while (iterator.hasNext()) {
                 RefreshToken token = iterator.next();
                 List<String> tokenDetail = new ArrayList<>();
                 tokenDetail.add(token.getAccessTokenValue());
@@ -40,11 +41,11 @@ public class RedisController {
     }
 
     @GetMapping("/blackList")
-    public List<List<String>> blackList(){
+    public List<List<String>> blackList() {
         List<List<String>> list = new ArrayList<>();
-        if(blackListTokenRedisRepo.count()!=0L){
+        if (blackListTokenRedisRepo.count() != 0L) {
             Iterator<BlackListToken> iterator = blackListTokenRedisRepo.findAll().iterator();
-            while(iterator.hasNext()){
+            while (iterator.hasNext()) {
                 BlackListToken token = iterator.next();
                 List<String> tokenDetail = new ArrayList<>();
                 tokenDetail.add(token.getBlackListToken());

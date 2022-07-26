@@ -2,31 +2,23 @@ package com.practice.userservice.domain.member.controller;
 
 
 import static com.practice.userservice.domain.member.model.Role.ROLE_USER;
-import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
 import com.practice.userservice.domain.member.controller.dto.MemberResponse;
 import com.practice.userservice.domain.member.controller.dto.MemberSaveRequest;
 import com.practice.userservice.domain.member.model.Member;
-import com.practice.userservice.domain.cache.model.RefreshToken;
-import com.practice.userservice.domain.cache.model.SignupKey;
-import com.practice.userservice.domain.cache.repository.RefreshTokenRedisRepo;
-import com.practice.userservice.domain.cache.repository.SignupKeyRedisRepo;
-import com.practice.userservice.domain.cache.repository.BlackListTokenRedisService;
+import com.practice.userservice.global.cache.model.TemporaryMember;
+import com.practice.userservice.global.cache.service.BlackListTokenRedisService;
 import com.practice.userservice.domain.member.service.MemberService;
-import com.practice.userservice.domain.cache.repository.RefreshTokenRedisService;
+import com.practice.userservice.global.cache.service.RefreshTokenRedisService;
+import com.practice.userservice.global.cache.service.TemporaryMemberRedisService;
 import com.practice.userservice.global.token.TokenGenerator;
 import com.practice.userservice.global.token.TokenService;
 import com.practice.userservice.global.token.TokenType;
 import com.practice.userservice.global.token.Tokens;
 import java.io.IOException;
 import java.net.URI;
-import java.net.URLDecoder;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
@@ -39,7 +31,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/v1")
 @RequiredArgsConstructor
 public class MemberController {
 
@@ -47,57 +39,52 @@ public class MemberController {
     private final TokenService tokenService;
     private final BlackListTokenRedisService blackListTokenRedisService;
     private final RefreshTokenRedisService refreshTokenRedisService;
-    private final SignupKeyRedisRepo signupKeyRedisRepo;
+    private final TemporaryMemberRedisService temporaryMemberRedisService;
     private final TokenGenerator tokenGenerator;
-    private final RefreshTokenRedisRepo refreshTokenRedisRepo;
 
-    @GetMapping("/test")
+    @GetMapping("/login")
     public String index() {
-        return "Hello world";
+        return "index.html";
     }
 
     @PostMapping("/signup")
     public ResponseEntity<MemberResponse> singup(
-        HttpServletRequest request,
         HttpServletResponse response,
         @Valid @RequestBody MemberSaveRequest memberSaveRequest
     ) throws IOException {
-        String email = URLDecoder.decode(request.getHeader(AUTHORIZATION), StandardCharsets.UTF_8);
-        Optional<SignupKey> signupKey = signupKeyRedisRepo.findById(email);// 리팩터링 필요
-        if(!signupKey.isPresent()){
-            throw new RuntimeException("url attack detected");
+        Optional<TemporaryMember> optionalMember = temporaryMemberRedisService.findById(
+            memberSaveRequest.email());
+        if (optionalMember.isEmpty()) {
+            throw new RuntimeException("signup time is expired");
         }
-        MemberResponse memberResponse = memberService.signup(memberSaveRequest, signupKey.get());
+        TemporaryMember temporaryMember = optionalMember.get();
+        MemberResponse memberResponse = memberService.signup(memberSaveRequest, temporaryMember);
         // 이미 회원가입 한 유저의 경우 토큰을 refreshToken 저장 후 accessToken 쿠키 전달
-        Tokens tokens = tokenGenerator.generateTokens(email, ROLE_USER.stringValue);
-        saveRefreshTokenToRedis(tokens);
+        Tokens tokens = tokenGenerator.generateTokens(memberSaveRequest.email(),
+            ROLE_USER.stringValue);
+
+        refreshTokenRedisService.save(tokens, tokenService.getRefreshPeriod());
 
         // cookie 로 전달
         String accessToken = tokens.getAccessToken();
-        addAccessTokenToCookie(response, accessToken, TokenType.JWT_TYPE);
-        System.out.println("!!");
-        System.out.println(tokenService.tokenWithType(accessToken, TokenType.JWT_TYPE));
+        tokenService.addAccessTokenToCookie(response, accessToken, TokenType.JWT_TYPE);
 
         return ResponseEntity.created(
-            URI.create("/api/v1/loginHome")).
+                URI.create("/api/v1/loginHome")).
             body(memberResponse);
     }
 
     @GetMapping("/logout")
     public void logout(HttpServletRequest request, HttpServletResponse response) {
-        String token = resolveToken(request);
-        System.out.println("logout start");
+        String token = tokenService.resolveToken(request);
+
         if (token != null) {
-            String email = tokenService.getUid(token);
-            String[] role = tokenService.getRole(token);
             long expiration = tokenService.getExpiration(token);
+
             refreshTokenRedisService.findAndDelete(token);
-            System.out.println(expiration);
             blackListTokenRedisService.logout(
                 tokenService.tokenWithType(token, TokenType.JWT_BLACKLIST), expiration);
-            System.out.println("logout success");
         }
-
     }
 
     @GetMapping("/users")
@@ -105,36 +92,5 @@ public class MemberController {
         return ResponseEntity
             .ok()
             .body(memberService.getUsers());
-    }
-
-
-    private String resolveToken(HttpServletRequest request) {
-        Optional<String> tokenHeader = Optional.ofNullable(
-            ((HttpServletRequest) request).getHeader(AUTHORIZATION));
-        String token = tokenHeader.map(tokenService::changeToToken).orElse(null);
-        return URLDecoder.decode(token, StandardCharsets.UTF_8);
-    }
-
-    private void saveRefreshTokenToRedis(Tokens tokens) {
-        Date now = new Date();
-        RefreshToken refreshToken = new RefreshToken(
-            tokens.getAccessToken(),
-            tokens.getRefreshToken(),
-            now,
-            new Date(now.getTime() + tokenService.getRefreshPeriod())
-        );
-        refreshTokenRedisRepo.save(refreshToken);
-    }
-
-
-    private void addAccessTokenToCookie(HttpServletResponse response, String accessToken,
-        TokenType tokenType) throws IOException {
-        Cookie cookie = new Cookie(AUTHORIZATION, URLEncoder.encode(tokenService.tokenWithType(accessToken, tokenType),StandardCharsets.UTF_8));
-
-        cookie.setSecure(true);
-        cookie.setHttpOnly(true);
-        cookie.setMaxAge((int) tokenService.getAccessTokenPeriod());
-
-        response.addCookie(cookie);
     }
 }

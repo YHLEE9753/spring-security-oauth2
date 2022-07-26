@@ -1,8 +1,7 @@
-package com.practice.userservice.domain.member.service;
+package com.practice.userservice.global.security;
 
 import static com.practice.userservice.domain.member.model.Role.ROLE_USER;
 
-import com.practice.userservice.global.security.OAuth2Attribute;
 import java.util.Collections;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +20,8 @@ import org.springframework.stereotype.Service;
 @Service
 @Primary
 @RequiredArgsConstructor
-public class CustomOAuth2MemberService implements OAuth2UserService<OAuth2UserRequest, OAuth2User>{
+public class CustomOAuth2MemberService implements OAuth2UserService<OAuth2UserRequest, OAuth2User> {
+
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
         DefaultOAuth2UserService oAuth2UserService = new DefaultOAuth2UserService();

@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class TokenGenerator {
+
     private final String issuer;
     private String secretKey;
     private final long tokenPeriod;
@@ -33,7 +34,7 @@ public class TokenGenerator {
         );
     }
 
-    public String generateAccessToken(Claims claims, Date now){
+    public String generateAccessToken(Claims claims, Date now) {
         return Jwts.builder()
             .setIssuer(issuer)
             .setClaims(claims)
@@ -43,7 +44,15 @@ public class TokenGenerator {
             .compact();
     }
 
-    public String generateRefreshToken(Claims claims, Date now){
+    public String generateAccessToken(String uid, String[] role) {
+        Claims claims = Jwts.claims().setSubject(uid);
+        claims.put("role", role);
+        Date now = new Date();
+
+        return this.generateAccessToken(claims, now);
+    }
+
+    public String generateRefreshToken(Claims claims, Date now) {
         return Jwts.builder()
             .setIssuer(issuer)
             .setClaims(claims)

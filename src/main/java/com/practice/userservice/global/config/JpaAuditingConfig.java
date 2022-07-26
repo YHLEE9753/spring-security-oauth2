@@ -19,7 +19,8 @@ public class JpaAuditingConfig {
         return () -> {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-            if (authentication == null || !authentication.isAuthenticated() || isAnonymous(authentication)) {
+            if (authentication == null || !authentication.isAuthenticated() || isAnonymous(
+                authentication)) {
                 return Optional.empty();
             }
 

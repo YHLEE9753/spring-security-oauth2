@@ -8,5 +8,6 @@ public record MemberDto(
     String githubUrl,
     String blogUrl
 ) {
+
 }
 

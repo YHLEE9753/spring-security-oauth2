@@ -79,7 +79,7 @@ app:
     refreshTokenExpiry: 7776000000
   oauth:
     domain: "http://localhost:3000"
-    sign-up-path: "/signup"
-    sign-up-time: 30000
-    login-path: "/main"
+    signupPath: "/signup"
+    signupTime: 300000
+    loginSuccessPath: "/main"
 

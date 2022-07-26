@@ -1,4 +1,4 @@
-package com.practice.userservice.domain.cache.model;
+package com.practice.userservice.global.cache.model;
 
 import lombok.Getter;
 import org.springframework.data.annotation.Id;
@@ -8,6 +8,7 @@ import org.springframework.data.redis.core.TimeToLive;
 @Getter
 @RedisHash(value = "blackListToken")
 public class BlackListToken {
+
     @Id
     private String blackListToken;
 
