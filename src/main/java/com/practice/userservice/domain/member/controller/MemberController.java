@@ -67,6 +67,7 @@ public class MemberController {
 
         // cookie 로 전달
         String accessToken = tokens.getAccessToken();
+        System.out.println(accessToken);
         tokenService.addAccessTokenToCookie(response, accessToken, TokenType.JWT_TYPE);
 
         return ResponseEntity.created(

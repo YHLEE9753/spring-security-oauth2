@@ -3,6 +3,8 @@ package com.practice.userservice.global.token;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
+import java.security.Key;
 import java.util.Base64;
 import java.util.Date;
 import org.springframework.stereotype.Component;
@@ -15,12 +17,18 @@ public class TokenGenerator {
     private final long tokenPeriod;
     private final long refreshPeriod;
 
+    private byte[] keyBytes;
+    private Key key;
+
+
     public TokenGenerator(JwtProperties jwtProperties) {
         this.issuer = jwtProperties.getIssuer();
         this.secretKey = jwtProperties.getTokenSecret();
         this.tokenPeriod = jwtProperties.getTokenExpiry();
         this.refreshPeriod = jwtProperties.getRefreshTokenExpiry();
         secretKey = Base64.getEncoder().encodeToString(secretKey.getBytes());
+        keyBytes = secretKey.getBytes();
+        key = Keys.hmacShaKeyFor(keyBytes);
     }
 
     public Tokens generateTokens(String uid, String role) {
@@ -40,7 +48,17 @@ public class TokenGenerator {
             .setClaims(claims)
             .setIssuedAt(now)
             .setExpiration(new Date(now.getTime() + tokenPeriod))
-            .signWith(SignatureAlgorithm.HS256, secretKey)
+            .signWith(key, SignatureAlgorithm.HS256)
+            .compact();
+    }
+
+    public String generateAccessToken2222222222222(Claims claims, Date now) {
+        return Jwts.builder()
+            .setIssuer(issuer)
+            .setClaims(claims)
+            .setIssuedAt(now)
+            .setExpiration(new Date(now.getTime() + tokenPeriod))
+            .signWith(key, SignatureAlgorithm.HS256)
             .compact();
     }
 
@@ -58,7 +76,7 @@ public class TokenGenerator {
             .setClaims(claims)
             .setIssuedAt(now)
             .setExpiration(new Date(now.getTime() + refreshPeriod))
-            .signWith(SignatureAlgorithm.HS256, secretKey)
+            .signWith(key, SignatureAlgorithm.HS256)
             .compact();
     }
 

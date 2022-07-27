@@ -6,7 +6,8 @@ import com.practice.userservice.global.util.CoderUtil;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
-import java.io.IOException;
+import io.jsonwebtoken.security.Keys;
+import java.security.Key;
 import java.util.Base64;
 import java.util.Date;
 import java.util.Optional;
@@ -22,17 +23,23 @@ public class TokenService {
     private final long refreshTokenPeriod;
     private final long accessTokenPeriod;
 
+    private byte[] keyBytes;
+    private Key key;
+
     public TokenService(JwtProperties jwtProperties) {
         this.secretKey = jwtProperties.getTokenSecret();
         this.refreshTokenPeriod = jwtProperties.getRefreshTokenExpiry();
         this.accessTokenPeriod = jwtProperties.getTokenExpiry();
         secretKey = Base64.getEncoder().encodeToString(secretKey.getBytes());
+        keyBytes = secretKey.getBytes();
+        key = Keys.hmacShaKeyFor(keyBytes);
     }
 
     public boolean verifyToken(String token) {
         try {
-            Jws<Claims> claims = Jwts.parser()
-                .setSigningKey(secretKey)
+            Jws<Claims> claims = Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
                 .parseClaimsJws(token);
 
             return claims.getBody()
@@ -45,8 +52,9 @@ public class TokenService {
 
     public String[] getRole(String token) {
         return new String[]{
-            (String) Jwts.parser()
-                .setSigningKey(secretKey)
+            (String) Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
                 .parseClaimsJws(token)
                 .getBody()
                 .get("role")
@@ -54,16 +62,18 @@ public class TokenService {
     }
 
     public String getUid(String token) {
-        return Jwts.parser()
-            .setSigningKey(secretKey)
+        return Jwts.parserBuilder()
+            .setSigningKey(key)
+            .build()
             .parseClaimsJws(token)
             .getBody()
             .getSubject();
     }
 
     public long getExpiration(String token) {
-        Date expiration = Jwts.parser()
-            .setSigningKey(secretKey)
+        Date expiration = Jwts.parserBuilder()
+            .setSigningKey(key)
+            .build()
             .parseClaimsJws(token)
             .getBody()
             .getExpiration();

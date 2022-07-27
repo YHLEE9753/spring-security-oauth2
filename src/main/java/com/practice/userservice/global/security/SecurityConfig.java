@@ -1,5 +1,8 @@
 package com.practice.userservice.global.security;
 
+import static com.practice.userservice.domain.member.model.Role.ROLE_USER;
+import static org.springframework.http.HttpMethod.GET;
+
 import com.practice.userservice.global.cache.repository.RefreshTokenRedisRepo;
 import com.practice.userservice.global.cache.service.BlackListTokenRedisService;
 import com.practice.userservice.global.token.TokenGenerator;
@@ -59,11 +62,11 @@ public class SecurityConfig {
             )
             .authorizeRequests(
                 authorizeRequests -> authorizeRequests
-                    .antMatchers("/**") // 개발 서버용
+                    .antMatchers("/api/**") // 개발 서버용
                     .permitAll()
 
-//                    .antMatchers(GET, "/api/user/**")
-//                    .hasAnyAuthority(ROLE_USER.stringValue)
+                    .antMatchers(GET, "/redis/**")
+                    .hasAnyAuthority(ROLE_USER.stringValue)
 
                     .anyRequest().authenticated()
             )

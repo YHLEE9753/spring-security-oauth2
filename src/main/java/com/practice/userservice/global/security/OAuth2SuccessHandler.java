@@ -89,6 +89,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
             saveRefreshTokenToRedis(tokens);
 
             // cookie 로 전달
+            System.out.println(tokens.getAccessToken());
             addAccessTokenToCookie(response, tokens.getAccessToken(), TokenType.JWT_TYPE);
             redirectStratgy.sendRedirect(request, response, domain + loginSuccessPath);
         }
